@@ -231,7 +231,7 @@ end );
 ##
 BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
     local C, k, eg, eh, i, pcp, rel, p, d,
-          e, f, c, j, N, M, fac, stb, F, act, nat;
+          e, f, c, j, N, M, fac, stb, F, act, nat, z;
 
     # do a simple check
     if Order(g) <> Order(h) then return false; fi;
@@ -286,9 +286,10 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             # extract results
             j := Position( stb.orbit, f*One(F) );
             if IsBool(j) then return false; fi;
-            k := k * TransversalElement( j, stb, One(G) );
+            z := TransversalElement( j, stb, One(G) );
+            k := k * z;
             stb := AddIgsToIgs( stb.stab, Igs(M) );
-            C := SubgroupByIgs( G, stb );
+            C := SubgroupByIgs( G, Igs( List( stb, x -> x^z ) ) );
 
         # if it is infinite and not-central
         else
