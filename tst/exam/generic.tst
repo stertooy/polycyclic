@@ -25,17 +25,21 @@ true
 gap> hom:=GroupHomomorphismByImages( G, Group(G!.mats), Igs(G), G!.mats);;
 
 #
-gap> IdGroup(BlowUpPcpPGroup(SmallGroup(2,1)));
-[ 2, 1 ]
-gap> IdGroup(BlowUpPcpPGroup(SmallGroup(4,1)));
-[ 8, 2 ]
-gap> IdGroup(BlowUpPcpPGroup(SmallGroup(4,2)));
-[ 8, 5 ]
-gap> List([1..5], i->IdGroup(BlowUpPcpPGroup(SmallGroup(8,i))));
-[ [ 128, 1601 ], [ 128, 2319 ], [ 128, 2320 ], [ 128, 2321 ], [ 128, 2328 ] ]
-gap> IdGroup(BlowUpPcpPGroup(SmallGroup(3,1)));
-[ 9, 2 ]
-gap> BlowUpPcpPGroup(SmallGroup(9,1));
+gap> fnc1:={i,j}->PcpGroupToPcGroup(BlowUpPcpPGroup(PcGroupCode(i,j)));;
+gap> fnc2:=G->[Size(G),CodePcGroup(G)];;
+gap> fnc:={i,j}->fnc2(fnc1(i,j));;
+gap> fnc(0,2);
+[ 2, 0 ]
+gap> fnc(5,4);
+[ 8, 291 ]
+gap> fnc(0,4);
+[ 8, 0 ]
+gap> List([323,33,36,2343,0], i->fnc(i,8));
+[ [ 128, 4648286596389404735 ], [ 128, 283691314053165 ], [ 128, 334923589489112660889148235683641060 ],
+  [ 128, 89905366469666764161151872091306780267034367 ], [ 128, 0 ] ]
+gap> fnc(0,3);
+[ 9, 0 ]
+gap> BlowUpPcpPGroup(PcGroupCode(5,9));
 Pcp-group with orders [ 3, 3, 3, 3, 3, 3, 3, 3 ]
-gap> BlowUpPcpPGroup(SmallGroup(9,2));
+gap> BlowUpPcpPGroup(PcGroupCode(0,9));
 Pcp-group with orders [ 3, 3, 3, 3, 3, 3, 3, 3 ]
