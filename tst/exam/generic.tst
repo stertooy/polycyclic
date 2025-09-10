@@ -33,7 +33,7 @@ gap> IsAbelian(G);
 true
 gap> AbelianInvariants(G);
 [ 2, 4 ]
-gap> G:=BlowUpPcpPGroup(PcGroupCode(5,0));;
+gap> G:=BlowUpPcpPGroup(PcGroupCode(0,4));;
 gap> IsAbelian(G);
 true
 gap> AbelianInvariants(G);
@@ -49,13 +49,13 @@ true
 gap> AbelianInvariants(G);
 [ 2, 2, 2, 2, 2, 4 ]
 gap> G:=BlowUpPcpPGroup(PcGroupCode(36,8));;
-gap> fac:=DirectFactorsOfGroup(G);
+gap> fac:=DirectFactorsOfGroup(G);;
 gap> Number(fac,F->Size(F)=2);
 4
 gap> Number(fac,F->IsDihedralGroup(F) and Size(F)=8);
 1
 gap> G:=BlowUpPcpPGroup(PcGroupCode(2343,8));;
-gap> fac:=DirectFactorsOfGroup(G);
+gap> fac:=DirectFactorsOfGroup(G);;
 gap> Number(fac,F->Size(F)=2);
 4
 gap> Number(fac,F->IsQuaternionGroup(F) and Size(F)=8);
