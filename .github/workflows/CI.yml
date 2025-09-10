@@ -41,7 +41,12 @@ jobs:
         with:
           gap-version: ${{ matrix.gap-version }}
       - name: 'Clone Alnuth'
-        run: gap -A -c 'LoadPackage("PackageManager");InstallPackage("https://github.com/gap-packages/alnuth.git");QUIT;'
+        run: |
+          gap -A <<GAPInput
+            LoadPackage("PackageManager");
+            InstallPackage("https://github.com/gap-packages/alnuth.git");
+            QUIT;
+          GAPInput
       - uses: gap-actions/build-pkg@v1
       - uses: gap-actions/run-pkg-tests@v3
       - uses: gap-actions/run-pkg-tests@v3
