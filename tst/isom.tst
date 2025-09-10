@@ -77,15 +77,15 @@ false
 gap> K:=DihedralGroup(IsPcpGroup, 16);;
 gap> iso:=IsomorphismPermGroup(K);;
 gap> img:=Image(iso);;
-gap> IsDihedralGroup(img) and Size(img)=16;
+gap> Size(img)=16 and IsDihedralGroup(img);
 true
 gap> iso:=IsomorphismPcGroup(K);;
 gap> img:=Image(iso);;
-gap> IsDihedralGroup(img) and Size(img)=16;
+gap> Size(img)=16 and IsDihedralGroup(img);
 true
 gap> iso:=IsomorphismFpGroup(K);;
 gap> img:=Image(iso);;
-gap> IsDihedralGroup(img) and Size(img)=16;
+gap> Size(img)=16 and IsDihedralGroup(img);
 true
 
 #
