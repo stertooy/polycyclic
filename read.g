@@ -25,15 +25,6 @@ if not IsBound( USED_PRIMES@ ) then USED_PRIMES@ := [3]; fi;
 if not IsBound( VERIFY@ ) then VERIFY@ := true; fi;
 
 ##
-## Starting with GAP 4.11, MultRowVector has been renamed to MultVector.
-## In order to stay compatible with older GAP releases, we define MultVector
-## if it is missing.
-##
-if not IsBound(MultVector) then
-  DeclareSynonym( "MultVector", MultRowVector );
-fi;
-
-##
 ## matrix -- basics about matrices, rational spaces, lattices and modules
 ##
 ReadPackage( "polycyclic", "gap/matrix/rowbases.gi");
