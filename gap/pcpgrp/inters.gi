@@ -151,5 +151,5 @@ function( U, V )
         return NormalIntersection( V, U );
     fi;
 
-    Error("sorry: intersection for non-normal groups not yet installed");
+    TryNextMethod();
 end );
