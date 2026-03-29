@@ -154,5 +154,6 @@ function( U, V )
     if IsFinite( U ) or IsFinite( V ) then
         TryNextMethod();
     fi;
-    Error( "sorry: intersection for non-normal groups not yet installed" );
+    Error( "sorry: intersection for infinite non-normal groups not yet
+            installed" );
 end );
