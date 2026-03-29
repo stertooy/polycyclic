@@ -82,7 +82,7 @@ Pcp-group with orders [ 0, 0, 0, 0 ]
 gap> H2:=Subgroup(G,[g[1], g[4]*g[5]]);
 Pcp-group with orders [ 0, 0 ]
 gap> Intersection(H1,H2);
-Error, sorry: intersection for infinite non-normal groups not yet installed
+Error, sorry: intersection for non-normal groups not yet installed
 
 # finite group example where the intersection isn't impl. when represented as a pcp-group (non-normalizing case)
 gap> G := PcGroupCode(45446527802282484537974096,2^2*3^4*5);;
@@ -125,7 +125,7 @@ gap> Image(iso,I);
 Pcp-group with orders [ 3, 3 ]
 
 # finite - infinite combination example where the intersection isn't impl. when represented as a pcp-group (non-normalizing case)
-gap> G := DirectProduct(ExamplesOfSomePcpGroups(8), PcGroupToPcpGroup(PcGroupCode(2835879971,72)));
+gap> G := DirectProduct(ExamplesOfSomePcpGroups(8), PcGroupToPcpGroup(PcGroupCode(2835879971,72)));;
 gap> g := GeneratorsOfGroup(G);;
 gap> H1 := Subgroup(G,[g[6]*g[9]^2]);
 Pcp-group with orders [ 2, 2 ]
