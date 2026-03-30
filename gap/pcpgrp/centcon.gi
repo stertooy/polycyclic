@@ -155,7 +155,7 @@ end );
 #F Centralizer
 ##
 BindGlobal( "CentralizerPcpGroup", function( G, g )
-    local H, contained;
+    local H, contained, C;
 
     # get arguments
     if IsPcpGroup(g) then
