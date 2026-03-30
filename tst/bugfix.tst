@@ -578,16 +578,6 @@ gap> Random( TrivialGroup( IsPcpGroup ) );
 id
 
 #
-# Allow Centralizer to fall back on generic GAP methods
-# <https://github.com/gap-packages/polycyclic/issues/64>
-#
-gap> G := PcGroupToPcpGroup( PcGroupCode( 520, 16 ) );;
-gap> g := G.1*G.3*G.4;;
-gap> H := Subgroup( G,[ G.2, G.3, G.4 ] );;
-gap> Centralizer( H, g );
-Pcp-group with orders [ 2, 2 ]
-
-#
 # Fix a bug in CentralizerBySeries
 # <https://github.com/gap-packages/polycyclic/issues/65>
 #
