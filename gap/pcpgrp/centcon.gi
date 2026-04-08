@@ -155,6 +155,7 @@ end );
 #F Centralizer
 ##
 BindGlobal( "CentralizerPcpGroup", function( G, g )
+    local H, contained, C;
 
     # get arguments
     if IsPcpGroup(g) then
@@ -165,11 +166,21 @@ BindGlobal( "CentralizerPcpGroup", function( G, g )
 
     # check
     if ForAny( g, x -> not x in G ) then
-        TryNextMethod();
+        contained := false;
+        H := ClosureGroup( G, g );
+    else
+        contained := true;
+        H := G;
     fi;
 
     # compute
-    return CentralizerBySeries( G, g, PcpsOfEfaSeries(G) );
+    C := CentralizerBySeries( H, g, PcpsOfEfaSeries(H) );
+
+    if not contained then
+        return Intersection( G, C );
+    else
+        return C;
+    fi;
 end );
 
 InstallMethod( CentralizerOp, "for a pcp group", IsCollsElms,
