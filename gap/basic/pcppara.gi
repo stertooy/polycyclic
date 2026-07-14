@@ -79,7 +79,7 @@ InstallGlobalFunction( AddToIgsParallel,
 function( pcs, gens, ppcs, pgens )
     local coll, rels, n, todo, tododo, ind, indd, g, gg, d, h, hh, k,
           e, c, i, r, sub, val, j, f, a, b, nrmd;
-
+    Print("CALLED!\n");
     if Length( gens ) = 0 then return [pcs, ppcs]; fi;
 
     # get information
