@@ -78,7 +78,7 @@ function( pcs, gens, ppcs, pgens )
             if IsBool( h ) then
                 Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
                 ind[d]  := NormedPcpElement(g);
-                indd[d] := NormedPcpElement(gg);
+                indd[d] := gg;
                 Add(f,d);
                 h  := ind[d];
                 hh := indd[d];
@@ -87,7 +87,7 @@ function( pcs, gens, ppcs, pgens )
                 e := Gcdex(a, b);
                 if e.coeff1 <> 0 then 
                     ind[d]  := NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
-                    indd[d] := NormedPcpElement((gg^e.coeff1)*(hh^e.coeff2));
+                    indd[d] := (gg^e.coeff1)*(hh^e.coeff2);
                     Add(f,d);
                 fi;
             fi;
