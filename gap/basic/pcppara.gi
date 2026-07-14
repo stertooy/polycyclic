@@ -25,14 +25,14 @@ end );
 ##
 ## Parallel version of NormedPcpElement.
 ##
-NormedPcpElementPara := function( g, gg )
+BindGlobal( "NormedPcpElementPara", function( g, gg )
     local e, h, hh;
     e := NormingExponent( g );
     h := g ^ e;
     h!.normed := true;
     hh := gg ^ e;
     return [ h, hh ];
-end;
+end );
 
 #############################################################################
 ##
@@ -40,7 +40,7 @@ end;
 ##
 ## Parallel version of  ReduceExpo.
 ##
-ReduceExpoPara := function ( ind, gen, indd, pgen, rel )
+BindGlobal( "ReduceExpoPara", function ( ind, gen, indd, pgen, rel )
     local i, j, a, b, q, f, k;
     for i in [ 1 .. Length( ind ) ] do
         if not IsBool( ind[i] ) and rel[i] = 0 then
@@ -66,7 +66,7 @@ ReduceExpoPara := function ( ind, gen, indd, pgen, rel )
         fi;
     od;
     return;
-end;
+end );
 
 #############################################################################
 ##
