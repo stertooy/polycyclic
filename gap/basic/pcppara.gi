@@ -66,7 +66,6 @@ function( pcs, gens, ppcs, pgens )
         f := [];
 
         # shift g into ind
-        changed := [];
         while d < c do
 
             h  := ind[d];
@@ -77,8 +76,8 @@ function( pcs, gens, ppcs, pgens )
             # shift in
             if IsBool( h ) then
                 Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
-                ind[d]  := g; #NormedPcpElement(g);
-                indd[d] := gg; #NormedPcpElement(gg);
+                ind[d]  := NormedPcpElement(g);
+                indd[d] := NormedPcpElement(gg);
                 Add(f,d);
                 h  := ind[d];
                 hh := indd[d];
@@ -86,8 +85,8 @@ function( pcs, gens, ppcs, pgens )
                 b := LeadingExponent(h);
                 e := Gcdex(a, b);
                 if e.coeff1 <> 0 then 
-                    ind[d]  := (g^e.coeff1)*(h^e.coeff2);   #NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
-                    indd[d] := (gg^e.coeff1)*(hh^e.coeff2); #NormedPcpElement((gg^e.coeff1)*(hh^e.coeff2));
+                    ind[d]  := NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
+                    indd[d] := NormedPcpElement((gg^e.coeff1)*(hh^e.coeff2));
                     Add(f,d);
                 fi;
             fi;
@@ -108,7 +107,7 @@ function( pcs, gens, ppcs, pgens )
         # adjust
         c := TailLimit(ind, c);
         ReduceExpo(ind,  todo,   rels);
-        #ReduceExpo(indd, tododo, rels);
+        ReduceExpo(indd, tododo, rels);
 
         # add powers and commutators
         for d in f do
@@ -147,10 +146,6 @@ function( pcs, gens, ppcs, pgens )
         val    := List(todo, x -> IGSValFun(x));
         Info(InfoPcpGrp, 3, Length(val)," versus ", ind);
     od;
-
-    # return resulting list
-    return [Filtered( ind, x -> not IsBool( x ) ),
-            Filtered( indd, x -> not IsBool( x ) ) ];
 
     ind  := Filtered(ind,  x -> not IsBool(x));
     indd := Filtered(indd, x -> not IsBool(x));
