@@ -39,7 +39,7 @@ ReduceExpoPara := function ( ind, gen, indd, pgen, rel )
                     q := QuoInt( a, b );
                     if q <> 0 then
                         ind[j] := ind[j] * ind[i] ^ (- q);
-                        indd[i] := indd[i] * indd[i] ^ (- q);
+                        indd[j] := indd[j] * indd[i] ^ (- q);
                     fi;
                 fi;
             od;
