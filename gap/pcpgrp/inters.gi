@@ -3,6 +3,57 @@
 #W  grpint.gi                  Polycyc                           Bettina Eick
 ##
 
+
+####################################################################
+##
+#F GcdPcp
+##
+BindGlobal( "GcdPcpPara", function(g, h, i, j)
+    local x, y, a, b, q, r, t, z, w, u;
+
+    x := g;
+    y := h;
+
+
+    a := LeadingExponent(x);
+    b := LeadingExponent(y);
+
+
+    z := i;
+    w := j;
+
+    
+    if a < 0 then
+        x := x^-1;
+        z := z^-1;
+        a := LeadingExponent(x);
+    fi;
+    if b < 0 then
+        y := y^-1;
+        w := w^-1;
+        b := LeadingExponent(y);
+    fi;
+
+    while b <> 0 do
+        q := QuoInt(a, b);
+        r := a - q * b;
+
+        t := x * y ^ -q;
+        x := y;
+        y := t;
+
+
+        u := z * w ^ -q;
+        z := w;
+        w := u;
+
+        a := b;
+        b := r;
+    od;
+
+    return [x, y, z, w];
+end );
+
 #############################################################################
 ##
 #F NormalIntersection( N, U ) . . . . . . . . . . . . . . . . . . .  U \cap N
@@ -18,7 +69,7 @@
 InstallMethod( NormalIntersection, "for pcp groups",
                IsIdenticalObj, [IsPcpGroup, IsPcpGroup],
 function( N, U )
-    local G, igs, igsN, igsU, n, s, I, id, ls, rs, is, g, d, al, ar, e, tm;
+    local G, igs, igsN, igsU, n, s, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs;
 
 	# get common overgroup of N and U
 	G := PcpGroupByCollector( Collector( N ) );
@@ -80,12 +131,12 @@ function( N, U )
 
         # compute sum and intersection
         while al <> id and ls[d] <> id do
-            e := Gcdex( LeadingExponent(ls[d]), LeadingExponent(al) );
-            tm := ls[d]^e.coeff1 * al^e.coeff2;
-            al := ls[d]^e.coeff3 * al^e.coeff4;
+            pairs := GcdPcpPara( ls[d], al, rs[d], ar );
+            tm := pairs[1];
+            al := pairs[2];
             ls[d] := tm;
-            tm := rs[d]^e.coeff1 * ar^e.coeff2;
-            ar := rs[d]^e.coeff3 * ar^e.coeff4;
+            tm := pairs[3];
+            ar := pairs[4];
             rs[d] := tm;
             d := Depth( al );
         od;
@@ -110,9 +161,9 @@ function( N, U )
             # filter it into the polycyclic sequence `is`
             d := Depth( ar );
             while ar <> id and is[d] <> id  do
-                e  := Gcdex(LeadingExponent( is[d] ), LeadingExponent( ar ));
-                tm := is[d]^e.coeff1 * ar^e.coeff2;
-                ar := is[d]^e.coeff3 * ar^e.coeff4;
+                pairs := GcdPcp( is[d], ar );
+                tm := pairs[1];
+                ar := pairs[2];
                 is[d] := tm;
                 d  := Depth( ar );
             od;
