@@ -19,6 +19,43 @@ BindGlobal( "UpdateCounterPara", function( ind, c )
     return i + 1;
 end );
 
+NormedPcpElementPara := function( g, gg )
+    local e, h, hh;
+    e := NormingExponent( g );
+    h := g ^ e;
+    h!.normed := true;
+    hh := gg ^ e;
+    hh!.normed := true;
+    return [ h, hh ];
+end;
+
+ReduceExpoPara := function ( ind, gen, indd, pgen, rel )
+    local i, j, a, b, q, f, k;
+    for i in [ 1 .. Length( ind ) ] do
+        if not IsBool( ind[i] ) and rel[i] = 0 then
+            b := LeadingExponent( ind[i] );
+            for j in [ 1 .. i - 1 ] do
+                if not IsBool( ind[j] ) then
+                    a := Exponents( ind[j] )[i];
+                    q := QuoInt( a, b );
+                    if q <> 0 then
+                        ind[j] := ind[j] * ind[i] ^ (- q);
+                        indd[i] := indd[i] * indd[i] ^ (- q);
+                    fi;
+                fi;
+            od;
+            for j in [ 1 .. Length( gen ) ] do
+                a := Exponents( gen[j] )[i];
+                q := QuoInt( a, b );
+                if q <> 0 then
+                    gen[j] := gen[j] * ind[i] ^ (- q);
+                    pgen[j] := pgen[j] * indd[i] ^ (- q);
+                fi;
+            od;
+        fi;
+    od;
+    return;
+end
 
 #############################################################################
 ##
@@ -30,7 +67,7 @@ end );
 InstallGlobalFunction( AddToIgsParallel,
 function( pcs, gens, ppcs, pgens )
     local coll, rels, n, todo, tododo, ind, indd, g, gg, d, h, hh, k,
-          eg, eh, e, changed, c, i, r, sub, val, j, f, a, b;
+          eg, eh, e, changed, c, i, r, sub, val, j, f, a, b, nrmd;
 
     if Length( gens ) = 0 then return [pcs, ppcs]; fi;
 
@@ -76,8 +113,9 @@ function( pcs, gens, ppcs, pgens )
             # shift in
             if IsBool( h ) then
                 Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
-                ind[d]  := NormedPcpElement(g);
-                indd[d] := NormedPcpElement(gg);
+                nrmd := NormedPcpElementPara( g, gg );
+                ind[d]  := nrmd[1];
+                indd[d] := nrmd[2];
                 Add(f,d);
                 h  := ind[d];
                 hh := indd[d];
@@ -85,8 +123,9 @@ function( pcs, gens, ppcs, pgens )
                 b := LeadingExponent(h);
                 e := Gcdex(a, b);
                 if e.coeff1 <> 0 then 
-                    ind[d]  := NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
-                    indd[d] := NormedPcpElement((gg^e.coeff1)*(hh^e.coeff2));
+                    nrmd := NormedPcpElementPara( (g^e.coeff1)*(h^e.coeff2), (gg^e.coeff1)*(hh^e.coeff2) );
+                    ind[d]  := nrmd[1];
+                    indd[d] := nrmd[2];
                     Add(f,d);
                 fi;
             fi;
@@ -106,8 +145,7 @@ function( pcs, gens, ppcs, pgens )
 
         # adjust
         c := TailLimit(ind, c);
-        ReduceExpo(ind,  todo,   rels);
-        ReduceExpo(indd, tododo, rels);
+        ReduceExpoPara(ind,  todo, indd, tododo,  rels);
 
         # add powers and commutators
         for d in f do
