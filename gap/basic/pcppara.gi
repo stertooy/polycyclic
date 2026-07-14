@@ -80,7 +80,7 @@ function( pcs, gens, ppcs, pgens )
             a := LeadingExponent(g);
 
             # shift in
-            if not IsBool( h ) then
+            if IsBool( h ) then
                 ind[d]  := NormedPcpElement(g);
                 indd[d] := NormedPcpElement(gg);
                 Add(f,d);
