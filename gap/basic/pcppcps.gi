@@ -121,10 +121,47 @@ IGSValFun := IGSValFun4;
 
 #############################################################################
 ##
+#F GcdPcp
+##
+BindGlobal( "GcdPcp", function(g, h)
+    local x, y, a, b, q, r, t;
+
+    x := g;
+    y := h;
+
+    a := LeadingExponent(x);
+    b := LeadingExponent(y);
+    
+    if a < 0 then
+        x := x^-1;
+        a := LeadingExponent(x);
+    fi;
+    if b < 0 then
+        y := y^-1;
+        b := LeadingExponent(y);
+    fi;
+
+    while b <> 0 do
+        q := QuoInt(a, b);
+        r := a - q * b;
+
+        t := x * y ^ -q;
+        x := y;
+        y := t;
+
+        a := b;
+        b := r;
+    od;
+
+    return [x, y];
+end;
+
+#############################################################################
+##
 #F AddToIgs( <igs>, <gens> )
 ##
 InstallGlobalFunction(AddToIgs, function(igs, gens)
-    local coll, rels, n, c, ind, g, d, todo, val, j, f, h, e, a, k, b, u, t, r;
+    local coll, rels, n, c, ind, g, d, todo, val, j, f, h, k, pair;
 
     if Length(gens) = 0 then return igs; fi;
 
@@ -152,34 +189,30 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
         # shift g into ind
         while d < c do
-
+        
             h := ind[d];
-            r := FactorOrder(g);
-            a := LeadingExponent(g);
-            
-            # shift in
-            if IsBool(h) then 
+
+            if IsBool(h) then
                 ind[d] := NormedPcpElement(g);
-                Add(f,d);
+                AddSet(f, d);
                 h := ind[d];
-            elif not IsPrime(r) then
-                b := LeadingExponent(h);
-                e := Gcdex(a, b);
-                if e.coeff1 <> 0 then 
-                    ind[d] := NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
-                    Add(f,d);
+            fi;
+
+            if g = h then
+                g := g^0;
+            else
+                pair := GcdPcp(g, h);
+                h := pair[1];
+                g := pair[2];
+                # Now g and h still generated same subgroup as before
+                if h <> ind[d] then
+                    ind[d] := NormedPcpElement( h );
+                    AddSet(f, d);
                 fi;
             fi;
 
-            # divide off
-            if g = h then 
-                g := g^0;
-            else
-                b := LeadingExponent(h);
-                e := Gcdex(a,b);
-                g := g^e.coeff3 * h^e.coeff4;
-            fi;
             d := Depth(g);
+
         od;
 
         # adjust
