@@ -25,7 +25,6 @@ NormedPcpElementPara := function( g, gg )
     h := g ^ e;
     h!.normed := true;
     hh := gg ^ e;
-    hh!.normed := true;
     return [ h, hh ];
 end;
 
