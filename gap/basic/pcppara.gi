@@ -77,8 +77,8 @@ function( pcs, gens, ppcs, pgens )
             # shift in
             if IsBool( h ) then
                 Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
-                ind[d]  := NormedPcpElement(g);
-                indd[d] := gg;
+                ind[d]  := g; #NormedPcpElement(g);
+                indd[d] := gg; #NormedPcpElement(gg);
                 Add(f,d);
                 h  := ind[d];
                 hh := indd[d];
@@ -86,8 +86,8 @@ function( pcs, gens, ppcs, pgens )
                 b := LeadingExponent(h);
                 e := Gcdex(a, b);
                 if e.coeff1 <> 0 then 
-                    ind[d]  := NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
-                    indd[d] := (gg^e.coeff1)*(hh^e.coeff2);
+                    ind[d]  := (g^e.coeff1)*(h^e.coeff2);   #NormedPcpElement((g^e.coeff1)*(h^e.coeff2));
+                    indd[d] := (gg^e.coeff1)*(hh^e.coeff2); #NormedPcpElement((gg^e.coeff1)*(hh^e.coeff2));
                     Add(f,d);
                 fi;
             fi;
@@ -95,7 +95,7 @@ function( pcs, gens, ppcs, pgens )
             # divide off
             if g = h then 
                 g  := g^0;
-                gg := gg^0; # Or only if gg = hh?
+                gg := gg^0;
             else
                 b  := LeadingExponent(h);
                 e  := Gcdex(a,b);
