@@ -52,7 +52,7 @@ function( pcs, gens, ppcs, pgens )
     # do a reduction step
     c      := TailLimit(ind, c);
     sub    := Filtered([1..Length(gens)], i -> Depth(gens[i]) < c);
-    sub    := Filtered(sub, i -> gens[i] not in gens{[1..i-1]}); # Essentially Set(todo)
+    sub    := Filtered(sub, i -> not gens[i] in gens{[1..i-1]}); # Essentially Set(todo)
     todo   := gens{sub};
     tododo := pgens{sub};
     val    := List(todo, x -> IGSValFun(x));
