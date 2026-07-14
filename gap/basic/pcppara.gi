@@ -57,11 +57,6 @@ function( pcs, gens, ppcs, pgens )
     tododo := pgens{sub};
     val    := List(todo, x -> IGSValFun(x));
 
-    # create a to-do list from gens/pgens
-    sub   := Filtered( [1..Length(gens)], x -> Depth(gens[x]) < c );
-    todo  := gens{sub};
-    tododo:= pgens{sub};
-
     # loop over to-do list until it is empty
     while Length( todo ) > 0 and c > 1 do
         j := Position(val, Minimum(val));
