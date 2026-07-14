@@ -146,8 +146,8 @@ function( pcs, gens, ppcs, pgens )
 
         # reduce
         sub    := Filtered([1..Length(todo)], i -> Depth(todo[i])<c);
-        todo   := todo{sub}
-        tododo := tododo{sub}
+        todo   := todo{sub};
+        tododo := tododo{sub};
         val    := List(todo, x -> IGSValFun(x));
         Info(InfoPcpGrp, 3, Length(val)," versus ", ind);
     od;
