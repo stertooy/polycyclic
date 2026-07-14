@@ -55,7 +55,7 @@ ReduceExpoPara := function ( ind, gen, indd, pgen, rel )
         fi;
     od;
     return;
-end
+end;
 
 #############################################################################
 ##
