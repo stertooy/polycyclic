@@ -76,6 +76,7 @@ function( pcs, gens, ppcs, pgens )
 
             # shift in
             if IsBool( h ) then
+                Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
                 ind[d]  := NormedPcpElement(g);
                 indd[d] := NormedPcpElement(gg);
                 Add(f,d);
