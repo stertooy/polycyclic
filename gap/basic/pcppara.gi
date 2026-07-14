@@ -111,7 +111,6 @@ function( pcs, gens, ppcs, pgens )
 
             # shift in
             if IsBool( h ) then
-                Print("NEW\ng: ",g,"\n  gg: ",gg,"\n");
                 nrmd := NormedPcpElementPara( g, gg );
                 ind[d]  := nrmd[1];
                 indd[d] := nrmd[2];
