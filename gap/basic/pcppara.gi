@@ -200,7 +200,7 @@ function( pcs, gens, ppcs, pgens )
     return [ind, indd];
 end );
 
-BindGLobal( "AddToIgsParallel_Old", function( pcs, gens, ppcs, pgens )
+BindGlobal( "AddToIgsParallel_Old", function( pcs, gens, ppcs, pgens )
     local coll, rels, n, id, todo, tododo, ind, indd, g, gg, d, h, hh, k,
           eg, eh, e, changed, c, i, r, sub;
 
