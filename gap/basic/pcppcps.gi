@@ -161,7 +161,7 @@ end );
 #F AddToIgs( <igs>, <gens> )
 ##
 InstallGlobalFunction(AddToIgs, function(igs, gens)
-    local coll, rels, n, c, ind, g, d, todo, val, j, f, h, k, pair;
+    local coll, rels, n, c, ind, g, d, todo, val, j, f, h, k, pair, t;
 
     if Length(gens) = 0 then return igs; fi;
 
