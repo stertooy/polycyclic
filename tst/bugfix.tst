@@ -682,12 +682,9 @@ gap> SchurCovers( CyclicGroup( 4 ) );
 
 # Fix a bug in AddToIgsParallel
 gap> G := ExamplesOfSomePcpGroups( 1 );;
-gap> H := Subgroup( G, [ G.1 ^ 8, G.1 ^ 3 * G.3 ] );;
-gap> GroupHomomorphismByImages( H, H );
-... TODO
-gap> K := Subgroup( G, [ G.1 ^ 2, G.1 ^ 3 * G.3 ] );;
-gap> GroupHomomorphismByImages( K, K );
-... TODO
+gap> H := Subgroup( G, [ G.1 ^ 2, G.1 ^ 3 * G.3 ] );;
+gap> IsOne( GroupHomomorphismByImages( H, H ) );
+true
 
 #
 gap> STOP_TEST( "bugfix.tst" );
