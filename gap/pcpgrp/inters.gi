@@ -210,6 +210,8 @@ function( N, U )
 
     # sum := Filtered( ls, x -> x <> id );
     I := Filtered( is, x -> x <> id );
+	# Not sure if necessary, but why not (?)
+    ReduceExpo( I, [], rels );
     return Subgroup( G, I );
 end );
 
