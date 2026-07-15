@@ -54,6 +54,36 @@ BindGlobal( "GcdPcpPara", function(g, h, i, j)
     return [x, y, z, w];
 end );
 
+
+
+BindGlobal( "ReduceExpoPara", function( ind, gen, indd, rel )
+    local i, j, a, b, q, f, k;
+
+    for i in [1..Length(ind)] do
+        if not IsOne(ind[i]) and rel[i]=0 then
+            b := LeadingExponent(ind[i]);
+            for j in [1..i-1] do
+                if not IsOne( ind[j] ) then
+                    a := Exponents(ind[j])[i];
+                    q := QuoInt(a,b);
+                    if q <> 0 then
+                        ind[j] := ind[j]*ind[i]^-q;
+                        indd[j] := indd[j]*indd[i]^-q;
+                    fi;
+                fi;
+            od;
+            for j in [1..Length(gen)] do
+                a := Exponents(gen[j][1])[i];
+                q := QuoInt(a,b);
+                if q <> 0 then
+                    gen[j][1] := gen[j][1]*ind[i]^-q;
+                    gen[j][2] := gen[j][2]*indd[i]^-q;
+                fi;
+            od;
+        fi;
+    od;
+end );
+
 #############################################################################
 ##
 #F NormalIntersection( N, U ) . . . . . . . . . . . . . . . . . . .  U \cap N
@@ -69,10 +99,12 @@ end );
 InstallMethod( NormalIntersection, "for pcp groups",
                IsIdenticalObj, [IsPcpGroup, IsPcpGroup],
 function( N, U )
-    local G, igs, igsN, igsU, n, s, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs;
+    local G, coll, rels, igs, igsN, igsU, n, s, todo, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs;
 
 	# get common overgroup of N and U
-	G := PcpGroupByCollector( Collector( N ) );
+    coll := Collector( N );
+    rels := RelativeOrders(coll);
+	G := PcpGroupByCollector( coll );
 
     igs  := Igs(G);
     igsN := Cgs( N );
@@ -113,33 +145,39 @@ function( N, U )
         rs[d] := g;
     od;
 
-    I := [];
+    todo := [];
     for g in igsN do
         d := Depth( g );
         if ls[d] = id then
             ls[d] := g;
         else
-            Add( I, [ g, id ] );
+            Add( todo, [ g, id ] );
         fi;
     od;
 
     # enter the pairs [ ar, al ] of <I> into [ <ls>, <rs> ]
-    for tm in I do
-        al := tm[1];
-        ar := tm[2];
-        d  := Depth( al );
+    while not IsEmpty( todo ) do
+        #tm := Remove( todo, 1 );
+        #al := tm[1];
+        #ar := tm[2];
+        d  := Depth( todo[1][1] );
 
         # compute sum and intersection
-        while al <> id and ls[d] <> id do
-            pairs := GcdPcpPara( ls[d], al, rs[d], ar );
-            tm := pairs[1];
-            al := pairs[2];
-            ls[d] := tm;
-            tm := pairs[3];
-            ar := pairs[4];
-            rs[d] := tm;
-            d := Depth( al );
+        while todo[1][1] <> id and ls[d] <> id do
+            pairs := GcdPcpPara( ls[d], todo[1][1], rs[d], todo[1][2] );
+            
+            todo[1][1] := pairs[2];
+            ls[d] := pairs[1];
+            
+            todo[1][2] := pairs[4];
+            rs[d] := pairs[3];
+            ReduceExpoPara( ls, rs, todo, rels );
+            d := Depth( todo[1][1] );
         od;
+
+        tm := Remove( todo, 1 );
+        al := tm[1];
+        ar := tm[2];
 
         # we have a new sum generator
         if al <> id then
@@ -151,7 +189,7 @@ function( N, U )
             if tm > 0 then
                 al := al^tm;
                 ar := ar^tm;
-                Add( I, [ al, ar ] );
+                Add( todo, [ al, ar ] );
             fi;
 
         # we have a new intersection generator
@@ -171,6 +209,7 @@ function( N, U )
                 is[d] := ar;
             fi;
         fi;
+        ReduceExpo( is, 
     od;
 
     # sum := Filtered( ls, x -> x <> id );
