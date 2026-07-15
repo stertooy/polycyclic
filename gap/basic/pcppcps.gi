@@ -393,25 +393,8 @@ end );
 ## factor. Typically, <pcs1> is induced wrt to a pcp and <pcs2> is the
 ## denominator of this pcp.
 ##
-BindGlobal( "AddIgsToIgs_New", function( pcs1, pcs2 )
-    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d;
-
-    if Length( pcs1 ) = 0 then
-        return AsList( pcs2 );
-    elif Length( pcs2 ) = 0 then
-        return AsList( pcs1 );
-    elif Depth( pcs1[Length(pcs1)] ) < Depth( pcs2[1] ) then
-        return Concatenation( AsList( pcs1 ), AsList( pcs2 ) );
-    elif Depth( pcs2[Length(pcs2)] ) < Depth( pcs1[1] ) then
-        return Concatenation( AsList( pcs2 ), AsList( pcs1 ) );
-    fi;
-
-    return AddToIgs( AsList(pcs1), AsList(pcs2) );
-
-end );
-
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
-    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, G, pair, g2, h2;
+    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, pair, t;
 
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
@@ -461,12 +444,8 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
 
                 # adjust g and ind[d] by gcd
                 pair := GcdPcp( ind[d], g );
-                h2 := pair[1];
-                g2 := pair[2];
-                ind[d] := (g^e.coeff1) * (h^e.coeff2);
-                g      := (g^e.coeff3) * (h^e.coeff4);
-                G := PcpGroupByCollector( coll );
-                Print("DEBUG: ", Subgroup( G, [ h2, g2 ] ) = Subgroup( G, [ ind[d], g ] )," \n");
+                ind[d] := pair[1];
+                g      := pair[2];
             else
                 ind[d] := g;
                 g      := g^0;
@@ -475,7 +454,13 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
             d := Depth( g );
         od;
     od;
-    return Filtered( ind, x -> not IsBool( x ) );
+    ind := Filtered( ind, x -> not IsBool( x ) );
+    if CHECK_IGS@ then
+        Info(InfoPcpGrp, 1, "checking igs ");
+        t := CheckIgs(ind, Concatenation(pcs1, pcs2);
+        if t <> true then Error("igs is incorrect at ",t); fi;
+    fi;
+    return ind;
 end );
 
 #############################################################################
