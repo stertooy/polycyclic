@@ -685,7 +685,7 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if not CheckStabilizer(G, T, mats, e) then
+        if not DebugCheckStabilizer(G, T, mats, e) then
             Error("wrong stab in integral action");
         elif not CheckOrbit(G, g, mats, e, f) then
             Error("wrong orbit in integral action");
