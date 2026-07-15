@@ -678,7 +678,12 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
 
     # get Stab_K(e) and thus Stab_G(e)
     Info( InfoIntStab, 1, "adding stabilizer for congruence subgroup");
+
+
     T := StabilizerCongruenceAction( K, actK, e, ser );
+
+
+
 Print("#I Checking Stab_K(e)\n");
 for h in Igs(T) do
     if not CheckOrbit(G, h, mats, e, e) then
@@ -710,6 +715,21 @@ od;
 
     #T := SubgroupByIgs( G, t );
     T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
+
+
+Print("#I g4^2 in constructed subgroup: ", G.4^2 in T, "\n");
+
+Print("#I Ordinary stored generators:\n");
+for h in GeneratorsOfGroup(T) do
+    Print("#I   ", h, " fixes e: ",
+          CheckOrbit(G, h, mats, e, e), "\n");
+od;
+
+Print("#I PCP generators:\n");
+for h in Pcp(T) do
+    Print("#I   ", h, " fixes e: ",
+          CheckOrbit(G, h, mats, e, e), "\n");
+od;
 
 Print("#I Checking constructed subgroup\n");
 for h in Igs(T) do
