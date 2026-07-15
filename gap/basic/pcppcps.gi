@@ -405,6 +405,23 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         return Concatenation( AsList( pcs2 ), AsList( pcs1 ) );
     fi;
 
+    return AddToIgs( AsList(pcs1), AsList(pcs2) );
+
+end );
+
+BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
+    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d;
+
+    if Length( pcs1 ) = 0 then
+        return AsList( pcs2 );
+    elif Length( pcs2 ) = 0 then
+        return AsList( pcs1 );
+    elif Depth( pcs1[Length(pcs1)] ) < Depth( pcs2[1] ) then
+        return Concatenation( AsList( pcs1 ), AsList( pcs2 ) );
+    elif Depth( pcs2[Length(pcs2)] ) < Depth( pcs1[1] ) then
+        return Concatenation( AsList( pcs2 ), AsList( pcs1 ) );
+    fi;
+
     # merge the two pcs'
     coll := Collector( pcs1[1] );
     rels := RelativeOrders( coll );
