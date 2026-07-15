@@ -394,7 +394,7 @@ end );
 ## denominator of this pcp.
 ##
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
-    local ind, t
+    local ind, t;
 
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
