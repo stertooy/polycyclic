@@ -131,26 +131,34 @@ end );
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
 BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, ind, len;
+    local lat, i, new, rels, dependent;
 
-    # set up
+    # If there are at least as many generators as the dimension of the
+    # algebra which they span, the integral units cannot be independent.
+    # In that case retain and refine one congruence lattice until an actual
+    # relation has been recovered.  Restarting from Z^n after every k primes
+    # can miss the same relation indefinitely.
+    dependent := Length( mats ) >= Length( AlgebraBase( mats ) );
     lat := IdentityMat( Length(mats) );
+    i := 0;
 
-    # compute new lattices and intersect
-    for i in [1..k] do
+    repeat
         p := NextPrimeInt(p);
         new := RelationLatticeMod( mats, GF(p) );
         lat := LatticeIntersection( lat, new );
-    od;
+        i := i + 1;
 
-    # find short vectors
-    lat := LLLReducedBasis( lat ).basis;
+        # Do the comparatively expensive LLL and exact checks after the
+        # requested initial batch, and after every further prime if a
+        # relation is known to exist.
+        rels := [];
+        if i >= k then
+            lat := LLLReducedBasis( lat ).basis;
+            rels := Filtered( lat, x -> IsRelation( mats, x ) );
+        fi;
+    until i >= k and (Length(rels) > 0 or not dependent);
 
-    # did we find any relations?
-    for i in [1..Length(lat)] do
-        if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
-    od;
-    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
+    return rec( rels := rels, prime := p );
 end );
 
 #############################################################################
@@ -209,7 +217,7 @@ end );
 ##
 ## Warning: G must be integral!
 ##
-BindGlobal( "KernelOfCongruenceMatrixActionGAP_Old", function( G, mats )
+BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
     local p, U, pcp, K, gens, acts, rell, tmps;
 
     # set up
@@ -234,57 +242,13 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP_Old", function( G, mats )
         gens := Pcp( G, U );
         acts := InducedByPcp( pcp, gens, mats );
         if not VerifyIndependence( acts ) then
-            Error("  generators are not linearly independent");
+            Error("failed to recover a relation in ApproxRelationLattice");
         fi;
     fi;
 
     # that's it
     return U;
 end );
-
-BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps, done, nprimes;
-
-    # set up
-    p := 1;
-    U := DerivedSubgroup(G);
-    pcp := Pcp( G );
-    nprimes := Length( mats[1] );
-
-    # now loop
-    repeat
-        K := U;
-        gens := Pcp( G, K );
-        acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, nprimes, p );
-        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
-        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-        U := SubgroupByIgs( G, tmps );
-        p := rell.prime;
-
-        done := Index( G, U ) = 1;
-        if not done and Index( U, K ) = 1 then
-            gens := Pcp( G, U );
-            acts := InducedByPcp( pcp, gens, mats );
-            done := VerifyIndependence( acts );
-
-            # The last modular approximation was too weak.  Merely moving
-            # to another batch of the same size can repeat this forever, so
-            # increase the number of congruence primes used in the next pass.
-            if not done then
-                nprimes := 2 * nprimes;
-            fi;
-        elif not done then
-            # Relations were found and U grew; start the next layer with the
-            # normal batch size again.
-            nprimes := Length( acts[1] );
-        fi;
-    until done;
-
-    # that's it
-    return U;
-end );
-
 
 #############################################################################
 ##
