@@ -1,9 +1,9 @@
 LoadPackage("polycyclic");
-CHECK_CENT@      := true;
-CHECK_IGS@       := true;
-CHECK_INTNORM@   := true;
-CHECK_INTSTAB@   := true;
-CHECK_NORM@      := true;
-CHECK_SCHUR_PCP@ := true;
+CHECK_CENT@Polycyclic      := true;
+CHECK_IGS@Polycyclic       := true;
+CHECK_INTNORM@Polycyclic   := true;
+CHECK_INTSTAB@Polycyclic   := true;
+CHECK_NORM@Polycyclic      := true;
+CHECK_SCHUR_PCP@Polycyclic := true;
 TestDirectory(DirectoriesPackageLibrary("polycyclic", "tst"), rec(exitGAP := true));
 FORCE_QUIT_GAP(1);
