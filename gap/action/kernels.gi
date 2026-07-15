@@ -210,55 +210,42 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, lat, new, i, rels, tmps,
-          d, done, independent;
+    local p, U, pcp, K, gens, acts, rell, tmps;
 
     # set up
     p := 1;
     U := DerivedSubgroup(G);
     pcp := Pcp( G );
-    done := false;
 
-    # Each outer iteration enlarges U.  While U does not grow, retain the
-    # accumulated congruence lattice instead of restarting it.
+    # now loop
     repeat
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        lat := IdentityMat( Length(acts) );
-        d := Length( acts[1] );
+        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
+        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
+        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+        U := SubgroupByIgs( G, tmps );
+        p := rell.prime;
+    until Index( G, U ) = 1 or Index( U, K ) = 1;
 
-        repeat
-            # Add another batch of congruence conditions to the SAME lattice.
-            for i in [1..d] do
-                p := NextPrimeInt(p);
-                new := RelationLatticeMod( acts, GF(p) );
-                lat := LatticeIntersection( lat, new );
-            od;
+# verify if desired
+if Index( G, U ) > 1 and VERIFY@ then
+    gens := Pcp( G, U );
+    acts := InducedByPcp( pcp, gens, mats );
 
-            lat := LLLReducedBasis( lat ).basis;
-            rels := Filtered( lat, x -> IsRelation( acts, x ) );
-            tmps := List( rels, x -> MappedVector( x, gens ) );
-            tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-            U := SubgroupByIgs( G, tmps );
+    Print("\n--- Kernel diagnostic ---\n");
+    Print("number of generators: ", Length(gens), "\n");
+    Print("matrix degree:         ", Length(acts[1]), "\n");
+    Print("algebra dimension:     ", Length(AlgebraBase(acts)), "\n");
+    Print("denominator:           ", DenominatorOfPcp(gens), "\n");
+    Print("generators:\n", AsList(gens), "\n");
+    Print("actions:\n", acts, "\n");
 
-            if Index( U, K ) = 1 then
-                # Length >= algebra dimension is already a certificate of
-                # dependence for this routine; avoid repeatedly calling the
-                # verbose verifier in that case.
-                independent := false;
-                if Length(acts) < Length(AlgebraBase(acts)) then
-                    independent := VerifyIndependence( acts );
-                fi;
-                done := independent;
-            else
-                # A new relation enlarged U. Recompute the relative pcp and
-                # induced action in the next outer iteration.
-                done := Index( G, U ) = 1;
-            fi;
-        until done or Index( U, K ) > 1;
-    until done;
+    Error("stop after kernel diagnostic");
+fi;
 
+    # that's it
     return U;
 end );
 
@@ -368,5 +355,4 @@ BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
     e := -r{[2..Length(r)]} * r[1];
     return MappedVector( e, Pcp(G) );
 end );
-
 
