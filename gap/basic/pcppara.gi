@@ -135,8 +135,8 @@ function( pcs, gens, ppcs, pgens )
                 pairs := GcdPcpPara(g, h, gg, hh);
                 h := pairs[1];
                 g := pairs[2];
-                gg := pairs[3];
-                hh := pairs[4];
+                hh := pairs[3];
+                gg := pairs[4];
                 if h <> ind[d] then
                     nrmd := NormedPcpElementPara( h, hh );
                     ind[d]  := nrmd[1];
