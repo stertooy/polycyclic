@@ -131,7 +131,7 @@ end );
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
 BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, ind, len;
+    local lat, i, new, ind, len, g, rel;
 
     # set up
     lat := IdentityMat( Length(mats) );
@@ -146,11 +146,30 @@ BindGlobal( "ApproxRelationLattice", function( mats, k, p )
     # find short vectors
     lat := LLLReducedBasis( lat ).basis;
 
-    # did we find any relations?
+    # Find exact relations and make them primitive where possible.
     for i in [1..Length(lat)] do
-        if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
+        if IsRelation( mats, lat[i] ) then
+            g := Gcd( List( lat[i], AbsInt ) );
+
+            if g > 1 then
+                rel := List( lat[i], x -> x / g );
+
+                # Only replace it when the primitive vector is itself
+                # an exact relation. This also avoids assumptions about
+                # possible torsion in the matrix group.
+                if IsRelation( mats, rel ) then
+                    lat[i] := rel;
+                fi;
+            fi;
+        else
+            lat[i] := false;
+        fi;
     od;
-    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
+
+    return rec(
+        rels  := Filtered( lat, x -> not IsBool(x) ),
+        prime := p
+    );
 end );
 
 #############################################################################
