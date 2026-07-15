@@ -642,7 +642,7 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
     Info( InfoIntStab, 1, "adding stabilizer for congruence subgroup");
     T := StabilizerCongruenceAction( K, actK, e, ser );
     t := AddIgsToIgs( os.stab, Igs(T) );
-    T := SubgroupByIgs( T, t );
+    T := SubgroupByIgs( G, t );
 
     # do a temporary check
     if CHECK_INTSTAB@ then
