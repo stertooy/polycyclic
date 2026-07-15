@@ -118,7 +118,7 @@ function( pcs, gens, ppcs, pgens )
             od;
         od;
     od;
-
+    Print("NOW!\n");
     # return resulting list
     return [Filtered( ind, x -> not IsBool( x ) ),
             Filtered( indd, x -> not IsBool( x ) ) ];
