@@ -78,7 +78,7 @@ end );
 InstallGlobalFunction( AddToIgsParallel,
 function( pcs, gens, ppcs, pgens )
     local coll, rels, n, todo, tododo, ind, indd, g, gg, d, h, hh, k,
-          e, c, i, r, sub, val, j, f, a, b, nrmd;
+          e, c, i, r, sub, val, j, f, a, b, nrmd, pairs;
 
     if Length( gens ) = 0 then return [pcs, ppcs]; fi;
 
@@ -118,8 +118,6 @@ function( pcs, gens, ppcs, pgens )
 
             h  := ind[d];
             hh := indd[d];
-            r := FactorOrder(g);
-            a := LeadingExponent(g);
 
             # shift in
             if IsBool( h ) then
@@ -129,27 +127,25 @@ function( pcs, gens, ppcs, pgens )
                 Add(f,d);
                 h  := ind[d];
                 hh := indd[d];
-            elif not IsPrime(r) then
-                b := LeadingExponent(h);
-                e := Gcdex(a, b);
-                if e.coeff1 <> 0 then 
-                    nrmd := NormedPcpElementPara( (g^e.coeff1)*(h^e.coeff2), (gg^e.coeff1)*(hh^e.coeff2) );
-                    ind[d]  := nrmd[1];
-                    indd[d] := nrmd[2];
-                    Add(f,d);
-                fi;
             fi;
-
-            # divide off
             if g = h then 
                 g  := g^0;
                 gg := gg^0;
             else
-                b  := LeadingExponent(h);
-                e  := Gcdex(a,b);
-                g  := g^e.coeff3 * h^e.coeff4;
-                gg := gg^e.coeff3 * hh^e.coeff4;
+                pairs := GcdPcpPara(g, h, gg, hh);
+                h := pairs[1];
+                g := pairs[2];
+                gg := pairs[3];
+                hh := pairs[4];
+                if h <> ind[d] then
+                    nrmd := NormedPcpElementPara( h, hh );
+                    ind[d]  := nrmd[1];
+                    indd[d] := nrmd[2];
+                    AddSet(f, d);
+                fi;
             fi;
+
+
             d := Depth(g);
         od;
 
