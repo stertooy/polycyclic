@@ -311,14 +311,25 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             f := ExponentsByPcp( pcp, c^-1*h ); Add( f, 1 );
             fac := Pcp( C, M );
             act := AffineActionByElement( fac, pcp, c );
-for t in Igs(M) do
-    j := AffineActionByElement([t], pcp, c)[1];
 
-    if j <> One(j) then
-        Print("#I M IS NOT IN AFFINE KERNEL\n");
-        Print("#I m = ", t, "\n");
-        Print("#I affine matrix = ", j, "\n");
-    fi;
+for t in AsList(fac) do
+    for j in AsList(fac) do
+        N := AffineActionByElement([t * j], pcp, c)[1];
+        M := AffineActionByElement([t], pcp, c)[1];
+        F := AffineActionByElement([j], pcp, c)[1];
+
+        if N <> M * F then
+            Print("#I DIRECT AFFINE MAP NOT MULTIPLICATIVE\n");
+            Print("#I a = ", t, "\n");
+            Print("#I b = ", j, "\n");
+        fi;
+
+        if N <> F * M then
+            Print("#I DIRECT AFFINE MAP NOT ANTI-MULTIPLICATIVE\n");
+            Print("#I a = ", t, "\n");
+            Print("#I b = ", j, "\n");
+        fi;
+    od;
 od;
 
 nat := NaturalHomomorphismByNormalSubgroup(C, M);
