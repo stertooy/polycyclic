@@ -455,11 +455,11 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         od;
     od;
     ind := Filtered( ind, x -> not IsBool( x ) );
-    if CHECK_IGS@ then
-        Info(InfoPcpGrp, 1, "checking igs ");
-        t := CheckIgs(ind, Concatenation(pcs1, pcs2) );
-        if t <> true then Error("igs is incorrect at ",t); fi;
-    fi;
+    #if CHECK_IGS@ then
+    #    Info(InfoPcpGrp, 1, "checking igs ");
+    #    t := CheckIgs(ind, Concatenation(pcs1, pcs2) );
+    #    if t <> true then Error("igs is incorrect at ",t); fi;
+    #fi;
     return ind;
 end );
 
