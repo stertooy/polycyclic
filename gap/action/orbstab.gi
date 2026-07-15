@@ -23,6 +23,42 @@ BindGlobal( "CheckStabilizer", function( G, S, mats, v )
     return true;
 end );
 
+BindGlobal( "DebugCheckStabilizer", function( G, S, mats, v )
+    local actS, i, R, bad;
+
+    actS := InducedByPcp( Pcp(G), Pcp(S), mats );
+
+    for i in [1..Length(actS)] do
+        if v * actS[i] <> v then
+            Print("#I Computed stabilizer contains a non-stabilizer\n");
+            Print("#I Bad generator: ", Pcp(S)[i], "\n");
+            Print("#I Image: ", v * actS[i], "\n");
+            return rec(
+                type := "too large",
+                bad := Pcp(S)[i]
+            );
+        fi;
+    od;
+
+    R := RandomPcpOrbitStabilizer(
+        v, Pcp(G), mats, OnRight
+    );
+
+    bad := Filtered(R.stab, x -> not x in S);
+
+    if Length(bad) > 0 then
+        Print("#I Computed stabilizer is too small\n");
+        Print("#I Missing stabilizer element: ", bad[1], "\n");
+        return rec(
+            type := "too small",
+            bad := bad[1],
+            random := R
+        );
+    fi;
+
+    return true;
+end );
+
 #############################################################################
 ##
 #F CheckOrbit( G, g, mats, e, f )
@@ -57,6 +93,8 @@ BindGlobal( "OrbitStabilizerTranslationAction", function( K, derK )
 
     return rec( stabl := stabl, trans := trans, orbit := orbit );
 end );
+
+
 
 #############################################################################
 ##
@@ -561,7 +599,7 @@ BindGlobal( "StabilizerIntegralAction", function( G, mats, e )
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if not CheckStabilizer(G, stab, mats, e) then
+        if not DebugCheckStabilizer(G, stab, mats, e) then
             Error("wrong stab in integral action");
         fi;
     fi;
