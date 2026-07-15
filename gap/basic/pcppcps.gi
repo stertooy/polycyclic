@@ -156,6 +156,43 @@ BindGlobal( "GcdPcp", function(g, h)
     return [x, y];
 end );
 
+
+BindGlobal( "BackReduceIgs", function(igs)
+    local out, i, j, d, exps, e, b, q;
+
+    out := ShallowCopy(igs);
+
+    if Length(out) <= 1 then
+        return out;
+    fi;
+
+    for i in Reversed([1 .. Length(out)-1]) do
+        for j in [i+1 .. Length(out)] do
+            d := Depth(out[j]);
+
+            exps := Exponents(out[i]);
+
+            if d <= Length(exps) then
+                e := exps[d];
+            else
+                e := 0;
+            fi;
+
+            b := LeadingExponent(out[j]);
+
+            if e <> 0 then
+                q := QuoInt(e, b);
+
+                if q <> 0 then
+                    out[i] := out[i] * out[j]^(-q);
+                fi;
+            fi;
+        od;
+    od;
+
+    return out;
+end );
+
 #############################################################################
 ##
 #F AddToIgs( <igs>, <gens> )
@@ -246,6 +283,7 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
     # return resulting list
     ind := Filtered(ind, x -> not IsBool(x));
+    ind := BackReduceIgs( ind );
     if CHECK_IGS@ then
         Info(InfoPcpGrp, 1, "checking igs ");
         t := CheckIgs(ind, gens);
