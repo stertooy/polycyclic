@@ -696,12 +696,21 @@ for h in os.stab do
               e * InducedByPcp(Pcp(G), h, mats), "\n");
     fi;
 od;
-    t := AddIgsToIgs( os.stab, Igs(T) );
 
 t := AddIgsToIgs(os.stab, Igs(T));
+t2 := AddIgsToIgs(Igs(T),os.stab);
 
-Print("#I Checking combined IGS\n");
+Print("#I Checking combined IGS (1)\n");
 for h in t do
+    if not CheckOrbit(G, h, mats, e, e) then
+        Print("#I BAD combined IGS generator: ", h, "\n");
+        Print("#I Image: ",
+              e * InducedByPcp(Pcp(G), h, mats), "\n");
+    fi;
+od;
+
+Print("#I Checking combined IGS (2)\n");
+for h in t2 do
     if not CheckOrbit(G, h, mats, e, e) then
         Print("#I BAD combined IGS generator: ", h, "\n");
         Print("#I Image: ",
