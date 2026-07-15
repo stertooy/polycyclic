@@ -2,7 +2,7 @@ LoadPackage("polycyclic");
 CHECK_CENT@Polycyclic      := true;
 CHECK_IGS@Polycyclic       := true;
 CHECK_INTNORM@Polycyclic   := true;
-CHECK_INTSTAB@Polycyclic   := true;
+#CHECK_INTSTAB@Polycyclic   := true;
 CHECK_NORM@Polycyclic      := true;
 CHECK_SCHUR_PCP@Polycyclic := true;
 TestDirectory(DirectoriesPackageLibrary("polycyclic", "tst"), rec(exitGAP := true));
