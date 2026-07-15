@@ -311,6 +311,29 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             f := ExponentsByPcp( pcp, c^-1*h ); Add( f, 1 );
             fac := Pcp( C, M );
             act := AffineActionByElement( fac, pcp, c );
+
+for t in AsList(fac) do
+    for j in AsList(fac) do
+        if InducedByPcp(fac, t * j, act)
+           <> InducedByPcp(fac, t, act)
+              * InducedByPcp(fac, j, act) then
+
+            Print("#I SOURCE ACTION NOT MULTIPLICATIVE\n");
+            Print("#I a = ", t, "\n");
+            Print("#I b = ", j, "\n");
+        fi;
+
+        if InducedByPcp(fac, t * j, act)
+           <> InducedByPcp(fac, j, act)
+              * InducedByPcp(fac, t, act) then
+
+            Print("#I SOURCE ACTION NOT ANTI-MULTIPLICATIVE\n");
+            Print("#I a = ", t, "\n");
+            Print("#I b = ", j, "\n");
+        fi;
+    od;
+od;
+
 nat := NaturalHomomorphismByNormalSubgroup(C, M);
 
 actimg := List(
