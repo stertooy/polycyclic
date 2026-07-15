@@ -323,25 +323,7 @@ od;
 
             act := AffineActionByElement( fac, pcp, c );
 
-for t in AsList(fac) do
-    for j in AsList(fac) do
-        matab := AffineActionByElement([t * j], pcp, c)[1];
-        mata  := AffineActionByElement([t], pcp, c)[1];
-        matb  := AffineActionByElement([j], pcp, c)[1];
 
-        if matab <> mata * matb then
-            Print("#I DIRECT AFFINE MAP NOT MULTIPLICATIVE\n");
-            Print("#I a = ", t, "\n");
-            Print("#I b = ", j, "\n");
-        fi;
-
-        if matab <> matb * mata then
-            Print("#I DIRECT AFFINE MAP NOT ANTI-MULTIPLICATIVE\n");
-            Print("#I a = ", t, "\n");
-            Print("#I b = ", j, "\n");
-        fi;
-    od;
-od;
 
 nat := NaturalHomomorphismByNormalSubgroup(C, M);
 
