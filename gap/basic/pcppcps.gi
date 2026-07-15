@@ -392,7 +392,7 @@ end );
 ## factor. Typically, <pcs1> is induced wrt to a pcp and <pcs2> is the
 ## denominator of this pcp.
 ##
-BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
+BindGlobal( "AddIgsToIgs_New", function( pcs1, pcs2 )
     local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d;
 
     if Length( pcs1 ) = 0 then
@@ -409,8 +409,8 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
 
 end );
 
-BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
-    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d;
+BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
+    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, G, pair, g2, h2;
 
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
@@ -459,8 +459,13 @@ BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
                 e  := Gcdex( eg, eh );
 
                 # adjust g and ind[d] by gcd
+                pair := GcdPcp( ind[d], g );
+                h2 := pair[1];
+                g2 := pair[2];
                 ind[d] := (g^e.coeff1) * (h^e.coeff2);
                 g      := (g^e.coeff3) * (h^e.coeff4);
+                G := PcpGroupByCollector( coll );
+                Print("DEBUG: ", Subgroup( G, [ h2, g2 ] ) = Subgroup( G, [ ind[d], g ] )," \n");
             else
                 ind[d] := g;
                 g      := g^0;
