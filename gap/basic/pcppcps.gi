@@ -247,7 +247,6 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
     # return resulting list
     ind := Filtered(ind, x -> not IsBool(x));
-    ind := BackReduceIgs( ind );
     if CHECK_IGS@ then
         Info(InfoPcpGrp, 1, "checking igs ");
         t := CheckIgs(ind, gens);
