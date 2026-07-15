@@ -312,12 +312,12 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             fac := Pcp( C, M );
             act := AffineActionByElement( fac, pcp, c );
             nat := NaturalHomomorphismByNormalSubgroup( C, M );
-            stb := OrbitIntegralAction(Image(nat), act, e, f);
+            stb := OrbitIntegralAction( Image(nat), act, e, f );
 
             # extract results
             if IsBool(stb) then return false; fi;
             C := PreImage(nat, stb.stab ^ stb.prei);
-            k := k * PreImagesRepresentativeNC(nat, stb.prei);
+            k := k * PreImagesRepresentativeNC( nat, stb.prei );
         fi;
     od;
 
