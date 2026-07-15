@@ -340,8 +340,8 @@ stb := OrbitIntegralAction(Image(nat), actimg, e, f);
 
             # extract results
             if IsBool(stb) then return false; fi;
-            C := PreImage( nat, stb.stab );
-            k := k * PreImagesRepresentativeNC( nat, stb.prei );
+            C := PreImage(nat, stb.stab ^ stb.prei);
+            k := k * PreImagesRepresentativeNC(nat, stb.prei);
         fi;
     od;
 
