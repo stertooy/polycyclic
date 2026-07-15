@@ -709,7 +709,7 @@ od;
 #od;
 
     #T := SubgroupByIgs( G, t );
-    T := Subgroup( G, Concatenation( os.stab, Igs( T ) ) );
+    T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
 
 Print("#I Checking constructed subgroup\n");
 for h in Igs(T) do
