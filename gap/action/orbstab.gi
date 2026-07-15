@@ -716,6 +716,24 @@ od;
     #T := SubgroupByIgs( G, t );
     T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
 
+for a in GeneratorsOfGroup(T) do
+    for b in GeneratorsOfGroup(T) do
+        if InducedByPcp(Pcp(G), a * b, mats)
+           <> InducedByPcp(Pcp(G), a, mats)
+              * InducedByPcp(Pcp(G), b, mats) then
+
+            Print("#I ACTION NOT MULTIPLICATIVE\n");
+            Print("#I a = ", a, "\n");
+            Print("#I b = ", b, "\n");
+            Print("#I matrix(a*b) = ",
+                  InducedByPcp(Pcp(G), a * b, mats), "\n");
+            Print("#I matrix(a)*matrix(b) = ",
+                  InducedByPcp(Pcp(G), a, mats)
+                  * InducedByPcp(Pcp(G), b, mats), "\n");
+        fi;
+    od;
+od;
+
 
 Print("#I Ordinary stored generators:\n");
 for h in GeneratorsOfGroup(T) do
