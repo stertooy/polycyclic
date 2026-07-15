@@ -242,7 +242,7 @@ end );
 ##
 BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
     local C, k, eg, eh, i, pcp, rel, p, d, t,
-          e, f, c, j, N, M, fac, stb, F, act, nat;
+          e, f, c, j, N, M, fac, stb, F, act, nat, actimg;
 
     # do a simple check
     if Order(g) <> Order(h) then return false; fi;
@@ -311,8 +311,18 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             f := ExponentsByPcp( pcp, c^-1*h ); Add( f, 1 );
             fac := Pcp( C, M );
             act := AffineActionByElement( fac, pcp, c );
-            nat := NaturalHomomorphismByNormalSubgroup( C, M );
-            stb := OrbitIntegralAction( Image(nat), act, e, f );
+nat := NaturalHomomorphismByNormalSubgroup(C, M);
+
+actimg := List(
+    AsList(Pcp(Image(nat))),
+    x -> InducedByPcp(
+        fac,
+        PreImagesRepresentativeNC(nat, x),
+        act
+    )
+);
+
+stb := OrbitIntegralAction(Image(nat), actimg, e, f);
 
             # extract results
             if IsBool(stb) then return false; fi;
