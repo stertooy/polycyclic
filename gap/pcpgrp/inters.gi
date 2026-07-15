@@ -157,27 +157,23 @@ function( N, U )
 
     # enter the pairs [ ar, al ] of <todo> into [ <ls>, <rs> ]
     while not IsEmpty( todo ) do
-        #tm := Remove( todo, 1 );
-        #al := tm[1];
-        #ar := tm[2];
+        tm := Remove( todo, 1 );
+        al := tm[1];
+        ar := tm[2];
         d  := Depth( todo[1][1] );
 
         # compute sum and intersection
         while todo[1][1] <> id and ls[d] <> id do
             pairs := GcdPcpPara( ls[d], todo[1][1], rs[d], todo[1][2] );
             
-            todo[1][1] := pairs[2];
+            al := pairs[2];
             ls[d] := pairs[1];
             
-            todo[1][2] := pairs[4];
+            ar := pairs[4];
             rs[d] := pairs[3];
             ReduceExpoPara( ls, todo, rs, rels );
             d := Depth( todo[1][1] );
         od;
-
-        tm := Remove( todo, 1 );
-        al := tm[1];
-        ar := tm[2];
 
         # we have a new sum generator
         if al <> id then
