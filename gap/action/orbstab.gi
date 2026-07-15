@@ -723,7 +723,7 @@ od;
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if DebugCheckStabilizer(G, T, mats, e) <> truethen
+        if DebugCheckStabilizer(G, T, mats, e) <> true then
             Error("wrong stab in integral action");
         elif not CheckOrbit(G, g, mats, e, f) then
             Error("wrong orbit in integral action");
