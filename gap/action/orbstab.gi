@@ -58,8 +58,6 @@ BindGlobal( "OrbitStabilizerTranslationAction", function( K, derK )
     return rec( stabl := stabl, trans := trans, orbit := orbit );
 end );
 
-
-
 #############################################################################
 ##
 #F InducedDerivation( g, G, linG, derG ) . . . . . . . . . value of derG on g
