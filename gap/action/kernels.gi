@@ -209,7 +209,7 @@ end );
 ##
 ## Warning: G must be integral!
 ##
-BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
+BindGlobal( "KernelOfCongruenceMatrixActionGAP_Old", function( G, mats )
     local p, U, pcp, K, gens, acts, rell, tmps;
 
     # set up
@@ -239,6 +239,39 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
     fi;
 
     # that's it
+    return U;
+end );
+
+BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
+    local p, U, pcp, K, gens, acts, rell, tmps, done;
+
+    # set up
+    p := 1;
+    U := DerivedSubgroup(G);
+    pcp := Pcp( G );
+
+    # now loop
+    repeat
+        K := U;
+        gens := Pcp( G, K );
+        acts := InducedByPcp( pcp, gens, mats );
+        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
+        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
+        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+        U := SubgroupByIgs( G, tmps );
+        p := rell.prime;
+
+        # No enlargement in one approximation does not prove that there
+        # are no further relations. Stop only after the remaining action
+        # generators have been proved independent.
+        done := Index( G, U ) = 1;
+        if not done and Index( U, K ) = 1 then
+            gens := Pcp( G, U );
+            acts := InducedByPcp( pcp, gens, mats );
+            done := VerifyIndependence( acts );
+        fi;
+    until done;
+
     return U;
 end );
 
