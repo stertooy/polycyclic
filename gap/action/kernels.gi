@@ -131,34 +131,26 @@ end );
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
 BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, rels, dependent;
+    local lat, i, new, ind, len;
 
-    # If there are at least as many generators as the dimension of the
-    # algebra which they span, the integral units cannot be independent.
-    # In that case retain and refine one congruence lattice until an actual
-    # relation has been recovered.  Restarting from Z^n after every k primes
-    # can miss the same relation indefinitely.
-    dependent := Length( mats ) >= Length( AlgebraBase( mats ) );
+    # set up
     lat := IdentityMat( Length(mats) );
-    i := 0;
 
-    repeat
+    # compute new lattices and intersect
+    for i in [1..k] do
         p := NextPrimeInt(p);
         new := RelationLatticeMod( mats, GF(p) );
         lat := LatticeIntersection( lat, new );
-        i := i + 1;
+    od;
 
-        # Do the comparatively expensive LLL and exact checks after the
-        # requested initial batch, and after every further prime if a
-        # relation is known to exist.
-        rels := [];
-        if i >= k then
-            lat := LLLReducedBasis( lat ).basis;
-            rels := Filtered( lat, x -> IsRelation( mats, x ) );
-        fi;
-    until i >= k and (Length(rels) > 0 or not dependent);
+    # find short vectors
+    lat := LLLReducedBasis( lat ).basis;
 
-    return rec( rels := rels, prime := p );
+    # did we find any relations?
+    for i in [1..Length(lat)] do
+        if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
+    od;
+    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
 end );
 
 #############################################################################
@@ -218,35 +210,55 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps;
+    local p, U, pcp, K, gens, acts, lat, new, i, rels, tmps,
+          d, done, independent;
 
     # set up
     p := 1;
     U := DerivedSubgroup(G);
     pcp := Pcp( G );
+    done := false;
 
-    # now loop
+    # Each outer iteration enlarges U.  While U does not grow, retain the
+    # accumulated congruence lattice instead of restarting it.
     repeat
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
-        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
-        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-        U := SubgroupByIgs( G, tmps );
-        p := rell.prime;
-    until Index( G, U ) = 1 or Index( U, K ) = 1;
+        lat := IdentityMat( Length(acts) );
+        d := Length( acts[1] );
 
-    # verify if desired
-    if Index( G, U ) > 1 and VERIFY@ then
-        gens := Pcp( G, U );
-        acts := InducedByPcp( pcp, gens, mats );
-        if not VerifyIndependence( acts ) then
-            Error("failed to recover a relation in ApproxRelationLattice");
-        fi;
-    fi;
+        repeat
+            # Add another batch of congruence conditions to the SAME lattice.
+            for i in [1..d] do
+                p := NextPrimeInt(p);
+                new := RelationLatticeMod( acts, GF(p) );
+                lat := LatticeIntersection( lat, new );
+            od;
 
-    # that's it
+            lat := LLLReducedBasis( lat ).basis;
+            rels := Filtered( lat, x -> IsRelation( acts, x ) );
+            tmps := List( rels, x -> MappedVector( x, gens ) );
+            tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+            U := SubgroupByIgs( G, tmps );
+
+            if Index( U, K ) = 1 then
+                # Length >= algebra dimension is already a certificate of
+                # dependence for this routine; avoid repeatedly calling the
+                # verbose verifier in that case.
+                independent := false;
+                if Length(acts) < Length(AlgebraBase(acts)) then
+                    independent := VerifyIndependence( acts );
+                fi;
+                done := independent;
+            else
+                # A new relation enlarged U. Recompute the relative pcp and
+                # induced action in the next outer iteration.
+                done := Index( G, U ) = 1;
+            fi;
+        until done or Index( U, K ) > 1;
+    until done;
+
     return U;
 end );
 
