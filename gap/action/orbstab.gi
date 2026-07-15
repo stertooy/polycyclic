@@ -599,7 +599,7 @@ BindGlobal( "StabilizerIntegralAction", function( G, mats, e )
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if not DebugCheckStabilizer(G, stab, mats, e) then
+        if DebugCheckStabilizer(G, stab, mats, e) <> true then
             Error("wrong stab in integral action");
         fi;
     fi;
@@ -679,13 +679,51 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
     # get Stab_K(e) and thus Stab_G(e)
     Info( InfoIntStab, 1, "adding stabilizer for congruence subgroup");
     T := StabilizerCongruenceAction( K, actK, e, ser );
+Print("#I Checking Stab_K(e)\n");
+for h in Igs(T) do
+    if not CheckOrbit(G, h, mats, e, e) then
+        Print("#I BAD kernel stabilizer generator: ", h, "\n");
+        Print("#I Image: ",
+              e * InducedByPcp(Pcp(G), h, mats), "\n");
+    fi;
+od;
+
+Print("#I Checking block stabilizer\n");
+for h in os.stab do
+    if not CheckOrbit(G, h, mats, e, e) then
+        Print("#I BAD block stabilizer generator: ", h, "\n");
+        Print("#I Image: ",
+              e * InducedByPcp(Pcp(G), h, mats), "\n");
+    fi;
+od;
     t := AddIgsToIgs( os.stab, Igs(T) );
+
+t := AddIgsToIgs(os.stab, Igs(T));
+
+Print("#I Checking combined IGS\n");
+for h in t do
+    if not CheckOrbit(G, h, mats, e, e) then
+        Print("#I BAD combined IGS generator: ", h, "\n");
+        Print("#I Image: ",
+              e * InducedByPcp(Pcp(G), h, mats), "\n");
+    fi;
+od;
+
     T := SubgroupByIgs( G, t );
+
+Print("#I Checking constructed subgroup\n");
+for h in Igs(T) do
+    if not CheckOrbit(G, h, mats, e, e) then
+        Print("#I BAD constructed subgroup generator: ", h, "\n");
+        Print("#I Image: ",
+              e * InducedByPcp(Pcp(G), h, mats), "\n");
+    fi;
+od;
 
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if not DebugCheckStabilizer(G, T, mats, e) then
+        if DebugCheckStabilizer(G, T, mats, e) <> truethen
             Error("wrong stab in integral action");
         elif not CheckOrbit(G, g, mats, e, f) then
             Error("wrong orbit in integral action");
