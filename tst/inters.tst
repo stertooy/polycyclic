@@ -135,9 +135,9 @@ gap> Intersection(H1,H2);
 Pcp-group with orders [ 2 ]
 
 #
-gap> G := ExamplesOfSomePcpGroups( 8 );
-gap> T := Subgroup( G, [ G.1^3*G.2^6*G.3^2*G.5^44, G.2^12*G.3*G.5^61, G.3^3*G.5^30, G.4^3*G.5^30, G.5^162 ] );
-gap> K := Subgroup( G, [ G.1^3*G.2^6*G.5^3, G.2^12, G.3*G.5^7, G.4^3*G.5^3, G.5^9 ] );
+gap> G := ExamplesOfSomePcpGroups( 8 );;
+gap> T := Subgroup( G, [ G.1^3*G.2^6*G.3^2*G.5^44, G.2^12*G.3*G.5^61, G.3^3*G.5^30, G.4^3*G.5^30, G.5^162 ] );;
+gap> K := Subgroup( G, [ G.1^3*G.2^6*G.5^3, G.2^12, G.3*G.5^7, G.4^3*G.5^3, G.5^9 ] );;
 gap> IsNormal( K, T );
 true
 gap> IsNormal( T, K );
