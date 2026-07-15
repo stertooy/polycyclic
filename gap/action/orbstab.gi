@@ -726,7 +726,7 @@ for h in GeneratorsOfGroup(T) do
 od;
 
 Print("#I PCP generators:\n");
-for h in Pcp(T) do
+for h in AsList(Pcp(T)) do
     Print("#I   ", h, " fixes e: ",
           CheckOrbit(G, h, mats, e, e), "\n");
 od;
