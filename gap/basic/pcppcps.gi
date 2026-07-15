@@ -394,6 +394,24 @@ end );
 ## denominator of this pcp.
 ##
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
+    local ind, t
+
+    if Length( pcs1 ) = 0 then
+        return AsList( pcs2 );
+    elif Length( pcs2 ) = 0 then
+        return AsList( pcs1 );
+    fi;
+
+    ind := AddToIgs( pcs2, pcs1 );
+    if CHECK_IGS@ then
+        Info(InfoPcpGrp, 1, "checking igs ");
+        t := CheckIgs(ind, Concatenation(pcs1, pcs2) );
+        if t <> true then Error("igs is incorrect at ",t); fi;
+    fi;
+    return ind;
+end );
+
+BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
     local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, pair, t;
 
     if Length( pcs1 ) = 0 then
