@@ -160,11 +160,11 @@ function( N, U )
         tm := Remove( todo, 1 );
         al := tm[1];
         ar := tm[2];
-        d  := Depth( todo[1][1] );
+        d  := Depth( al );
 
         # compute sum and intersection
-        while todo[1][1] <> id and ls[d] <> id do
-            pairs := GcdPcpPara( ls[d], todo[1][1], rs[d], todo[1][2] );
+        while al <> id and ls[d] <> id do
+            pairs := GcdPcpPara( ls[d], al, rs[d], ar );
             
             al := pairs[2];
             ls[d] := pairs[1];
@@ -172,7 +172,7 @@ function( N, U )
             ar := pairs[4];
             rs[d] := pairs[3];
             ReduceExpoPara( ls, todo, rs, rels );
-            d := Depth( todo[1][1] );
+            d := Depth( al );
         od;
 
         # we have a new sum generator
