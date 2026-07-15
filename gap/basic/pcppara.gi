@@ -124,7 +124,7 @@ function( pcs, gens, ppcs, pgens )
                 nrmd := NormedPcpElementPara( g, gg );
                 ind[d]  := nrmd[1];
                 indd[d] := nrmd[2];
-                Add(f,d);
+                AddSet(f,d);
                 h  := ind[d];
                 hh := indd[d];
             fi;
