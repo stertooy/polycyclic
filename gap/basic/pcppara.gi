@@ -40,7 +40,7 @@ end );
 ##
 ## Parallel version of  ReduceExpo.
 ##
-BindGlobal( "ReduceExpoPara", function ( ind, gen, indd, pgen, rel )
+BindGlobal( "ReduceExpoPara2", function ( ind, gen, indd, pgen, rel )
     local i, j, a, b, q, f, k;
     for i in [ 1 .. Length( ind ) ] do
         if not IsBool( ind[i] ) and rel[i] = 0 then
@@ -155,7 +155,7 @@ function( pcs, gens, ppcs, pgens )
 
         # adjust
         c := TailLimit(ind, c);
-        ReduceExpoPara(ind,  todo, indd, tododo,  rels);
+        ReduceExpoPara2(ind,  todo, indd, tododo,  rels);
 
         # add powers and commutators
         for d in f do
