@@ -242,7 +242,7 @@ end );
 ##
 BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
     local C, k, eg, eh, i, pcp, rel, p, d, t,
-          e, f, c, j, N, M, fac, stb, F, act, nat, actimg;
+          e, f, c, j, N, M, fac, stb, F, act, nat, actimg, matb, matab, mata;
 
     # do a simple check
     if Order(g) <> Order(h) then return false; fi;
@@ -314,17 +314,17 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
 
 for t in AsList(fac) do
     for j in AsList(fac) do
-        N := AffineActionByElement([t * j], pcp, c)[1];
-        M := AffineActionByElement([t], pcp, c)[1];
-        F := AffineActionByElement([j], pcp, c)[1];
+        matab := AffineActionByElement([t * j], pcp, c)[1];
+        mata  := AffineActionByElement([t], pcp, c)[1];
+        matb  := AffineActionByElement([j], pcp, c)[1];
 
-        if N <> M * F then
+        if matab <> mata * matb then
             Print("#I DIRECT AFFINE MAP NOT MULTIPLICATIVE\n");
             Print("#I a = ", t, "\n");
             Print("#I b = ", j, "\n");
         fi;
 
-        if N <> F * M then
+        if matab <> matb * mata then
             Print("#I DIRECT AFFINE MAP NOT ANTI-MULTIPLICATIVE\n");
             Print("#I a = ", t, "\n");
             Print("#I b = ", j, "\n");
