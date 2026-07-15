@@ -243,12 +243,13 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP_Old", function( G, mats )
 end );
 
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps, done;
+    local p, U, pcp, K, gens, acts, rell, tmps, done, nprimes;
 
     # set up
     p := 1;
     U := DerivedSubgroup(G);
     pcp := Pcp( G );
+    nprimes := Length( mats[1] );
 
     # now loop
     repeat
@@ -260,23 +261,30 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
         U := SubgroupByIgs( G, tmps );
         p := rell.prime;
-    
+
         done := Index( G, U ) = 1;
         if not done and Index( U, K ) = 1 then
             gens := Pcp( G, U );
             acts := InducedByPcp( pcp, gens, mats );
             done := VerifyIndependence( acts );
-    
+
+            # The last modular approximation was too weak.  Merely moving
+            # to another batch of the same size can repeat this forever, so
+            # increase the number of congruence primes used in the next pass.
             if not done then
                 nprimes := 2 * nprimes;
             fi;
         elif not done then
+            # Relations were found and U grew; start the next layer with the
+            # normal batch size again.
             nprimes := Length( acts[1] );
         fi;
     until done;
 
+    # that's it
     return U;
 end );
+
 
 #############################################################################
 ##
