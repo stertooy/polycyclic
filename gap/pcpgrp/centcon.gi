@@ -310,6 +310,17 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             M := SubgroupByIgs( G, DenominatorOfPcp(pcp) );
             f := ExponentsByPcp( pcp, c^-1*h ); Add( f, 1 );
             fac := Pcp( C, M );
+
+N := SubgroupByIgs(G, NumeratorOfPcp(pcp));
+
+for t in AsList(fac) do
+    if not Comm(c, t) in N then
+        Print("#I COMMUTATOR OUTSIDE LAYER NUMERATOR\n");
+        Print("#I x = ", t, "\n");
+        Print("#I Comm(c,x) = ", Comm(c, t), "\n");
+    fi;
+od;
+
             act := AffineActionByElement( fac, pcp, c );
 
 for t in AsList(fac) do
