@@ -155,7 +155,7 @@ function( N, U )
         fi;
     od;
 
-    # enter the pairs [ ar, al ] of <I> into [ <ls>, <rs> ]
+    # enter the pairs [ ar, al ] of <todo> into [ <ls>, <rs> ]
     while not IsEmpty( todo ) do
         #tm := Remove( todo, 1 );
         #al := tm[1];
@@ -171,7 +171,7 @@ function( N, U )
             
             todo[1][2] := pairs[4];
             rs[d] := pairs[3];
-            ReduceExpoPara( ls, rs, todo, rels );
+            ReduceExpoPara( ls, todo, rs, rels );
             d := Depth( todo[1][1] );
         od;
 
