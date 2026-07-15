@@ -209,7 +209,7 @@ function( N, U )
                 is[d] := ar;
             fi;
         fi;
-        ReduceExpo( is, 
+        
     od;
 
     # sum := Filtered( ls, x -> x <> id );
