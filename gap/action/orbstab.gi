@@ -23,42 +23,6 @@ BindGlobal( "CheckStabilizer", function( G, S, mats, v )
     return true;
 end );
 
-BindGlobal( "DebugCheckStabilizer", function( G, S, mats, v )
-    local actS, i, R, bad;
-
-    actS := InducedByPcp( Pcp(G), Pcp(S), mats );
-
-    for i in [1..Length(actS)] do
-        if v * actS[i] <> v then
-            Print("#I Computed stabilizer contains a non-stabilizer\n");
-            Print("#I Bad generator: ", Pcp(S)[i], "\n");
-            Print("#I Image: ", v * actS[i], "\n");
-            return rec(
-                type := "too large",
-                bad := Pcp(S)[i]
-            );
-        fi;
-    od;
-
-    R := RandomPcpOrbitStabilizer(
-        v, Pcp(G), mats, OnRight
-    );
-
-    bad := Filtered(R.stab, x -> not x in S);
-
-    if Length(bad) > 0 then
-        Print("#I Computed stabilizer is too small\n");
-        Print("#I Missing stabilizer element: ", bad[1], "\n");
-        return rec(
-            type := "too small",
-            bad := bad[1],
-            random := R
-        );
-    fi;
-
-    return true;
-end );
-
 #############################################################################
 ##
 #F CheckOrbit( G, g, mats, e, f )
@@ -599,7 +563,7 @@ BindGlobal( "StabilizerIntegralAction", function( G, mats, e )
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if DebugCheckStabilizer(G, stab, mats, e) <> true then
+        if not CheckStabilizer(G, stab, mats, e) then
             Error("wrong stab in integral action");
         fi;
     fi;
@@ -616,7 +580,7 @@ end );
 ## returns false otherwise.
 ##
 BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
-    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l, t2, a, b;
+    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l;
 
     # reduce e and f
     c := Gcd(e); e := e/c; f := f/c;
@@ -678,12 +642,9 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
 
     # get Stab_K(e) and thus Stab_G(e)
     Info( InfoIntStab, 1, "adding stabilizer for congruence subgroup");
-
-
     T := StabilizerCongruenceAction( K, actK, e, ser );
-    t := AddIgsToIgs(os.stab, Igs(T));
+    t := AddIgsToIgs( os.stab, Igs(T) );
     T := SubgroupByIgs( G, t );
-    #T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
 
     # do a temporary check
     if CHECK_INTSTAB@ then
