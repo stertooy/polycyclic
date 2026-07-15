@@ -681,85 +681,14 @@ BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
 
 
     T := StabilizerCongruenceAction( K, actK, e, ser );
-
-
-
-Print("#I Checking Stab_K(e)\n");
-for h in Igs(T) do
-    if not CheckOrbit(G, h, mats, e, e) then
-        Print("#I BAD kernel stabilizer generator: ", h, "\n");
-        Print("#I Image: ",
-              e * InducedByPcp(Pcp(G), h, mats), "\n");
-    fi;
-od;
-
-Print("#I Checking block stabilizer\n");
-for h in os.stab do
-    if not CheckOrbit(G, h, mats, e, e) then
-        Print("#I BAD block stabilizer generator: ", h, "\n");
-        Print("#I Image: ",
-              e * InducedByPcp(Pcp(G), h, mats), "\n");
-    fi;
-od;
-
-#t := AddIgsToIgs(os.stab, Igs(T));
-
-#Print("#I Checking combined IGS)\n");
-#for h in t do
-#    if not CheckOrbit(G, h, mats, e, e) then
-#        Print("#I BAD combined IGS generator: ", h, "\n");
-#        Print("#I Image: ",
-#              e * InducedByPcp(Pcp(G), h, mats), "\n");
-#    fi;
-#od;
-
-    #T := SubgroupByIgs( G, t );
-    T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
-
-for a in GeneratorsOfGroup(T) do
-    for b in GeneratorsOfGroup(T) do
-        if InducedByPcp(Pcp(G), a * b, mats)
-           <> InducedByPcp(Pcp(G), b, mats)
-              * InducedByPcp(Pcp(G), a, mats) then
-
-            Print("#I REVERSED ACTION ALSO NOT MULTIPLICATIVE\n");
-            Print("#I a = ", a, "\n");
-            Print("#I b = ", b, "\n");
-            Print("#I matrix(a*b) = ",
-                  InducedByPcp(Pcp(G), a * b, mats), "\n");
-            Print("#I matrix(b)*matrix(a) = ",
-                  InducedByPcp(Pcp(G), b, mats)
-                  * InducedByPcp(Pcp(G), a, mats), "\n");
-        fi;
-    od;
-od;
-
-
-Print("#I Ordinary stored generators:\n");
-for h in GeneratorsOfGroup(T) do
-    Print("#I   ", h, " fixes e: ",
-          CheckOrbit(G, h, mats, e, e), "\n");
-od;
-
-Print("#I PCP generators:\n");
-for h in AsList(Pcp(T)) do
-    Print("#I   ", h, " fixes e: ",
-          CheckOrbit(G, h, mats, e, e), "\n");
-od;
-
-Print("#I Checking constructed subgroup\n");
-for h in Igs(T) do
-    if not CheckOrbit(G, h, mats, e, e) then
-        Print("#I BAD constructed subgroup generator: ", h, "\n");
-        Print("#I Image: ",
-              e * InducedByPcp(Pcp(G), h, mats), "\n");
-    fi;
-od;
+    t := AddIgsToIgs(os.stab, Igs(T));
+    T := SubgroupByIgs( G, t );
+    #T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
 
     # do a temporary check
     if CHECK_INTSTAB@ then
         Info( InfoIntStab, 1, "checking results");
-        if DebugCheckStabilizer(G, T, mats, e) <> true then
+        if not CheckStabilizer(G, T, mats, e) then
             Error("wrong stab in integral action");
         elif not CheckOrbit(G, g, mats, e, f) then
             Error("wrong orbit in integral action");
