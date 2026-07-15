@@ -616,7 +616,7 @@ end );
 ## returns false otherwise.
 ##
 BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
-    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l, t2;
+    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l, t2, a, b;
 
     # reduce e and f
     c := Gcd(e); e := e/c; f := f/c;
@@ -719,17 +719,17 @@ od;
 for a in GeneratorsOfGroup(T) do
     for b in GeneratorsOfGroup(T) do
         if InducedByPcp(Pcp(G), a * b, mats)
-           <> InducedByPcp(Pcp(G), a, mats)
-              * InducedByPcp(Pcp(G), b, mats) then
+           <> InducedByPcp(Pcp(G), b, mats)
+              * InducedByPcp(Pcp(G), a, mats) then
 
-            Print("#I ACTION NOT MULTIPLICATIVE\n");
+            Print("#I REVERSED ACTION ALSO NOT MULTIPLICATIVE\n");
             Print("#I a = ", a, "\n");
             Print("#I b = ", b, "\n");
             Print("#I matrix(a*b) = ",
                   InducedByPcp(Pcp(G), a * b, mats), "\n");
-            Print("#I matrix(a)*matrix(b) = ",
-                  InducedByPcp(Pcp(G), a, mats)
-                  * InducedByPcp(Pcp(G), b, mats), "\n");
+            Print("#I matrix(b)*matrix(a) = ",
+                  InducedByPcp(Pcp(G), b, mats)
+                  * InducedByPcp(Pcp(G), a, mats), "\n");
         fi;
     od;
 od;
