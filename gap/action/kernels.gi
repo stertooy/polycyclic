@@ -255,20 +255,23 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
+        rell := ApproxRelationLattice( acts, nprimes, p );
         tmps := List( rell.rels, x -> MappedVector( x, gens ) );
         tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
         U := SubgroupByIgs( G, tmps );
         p := rell.prime;
-
-        # No enlargement in one approximation does not prove that there
-        # are no further relations. Stop only after the remaining action
-        # generators have been proved independent.
+    
         done := Index( G, U ) = 1;
         if not done and Index( U, K ) = 1 then
             gens := Pcp( G, U );
             acts := InducedByPcp( pcp, gens, mats );
             done := VerifyIndependence( acts );
+    
+            if not done then
+                nprimes := 2 * nprimes;
+            fi;
+        elif not done then
+            nprimes := Length( acts[1] );
         fi;
     until done;
 
