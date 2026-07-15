@@ -242,7 +242,7 @@ end );
 ##
 BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
     local C, k, eg, eh, i, pcp, rel, p, d, t,
-          e, f, c, j, N, M, fac, stb, F, act, nat, D;
+          e, f, c, j, N, M, fac, stb, F, act, nat;
 
     # do a simple check
     if Order(g) <> Order(h) then return false; fi;
@@ -317,8 +317,6 @@ BindGlobal( "ConjugacyElementsBySeries", function( G, g, h, pcps )
             # extract results
             if IsBool(stb) then return false; fi;
             C := PreImage( nat, stb.stab^stb.prei );
-            D := PreImage( nat, stb.stab );
-            Error(" DEBUG TIME ");
             k := k * PreImagesRepresentativeNC( nat, stb.prei );
         fi;
     od;
