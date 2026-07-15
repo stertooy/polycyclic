@@ -616,7 +616,7 @@ end );
 ## returns false otherwise.
 ##
 BindGlobal( "OrbitIntegralAction", function( G, mats, e, f )
-    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l;
+    local c, F, t, os, j, g, S, actS, K, actK, ser, orbf, h, T, l, t2;
 
     # reduce e and f
     c := Gcd(e); e := e/c; f := f/c;
@@ -718,7 +718,8 @@ for h in t2 do
     fi;
 od;
 
-    T := SubgroupByIgs( G, t );
+    #T := SubgroupByIgs( G, t );
+    T := Subgroup( G, Concatenation( os.stab, GeneratorsOfGroup( T ) ) );
 
 Print("#I Checking constructed subgroup\n");
 for h in Igs(T) do
