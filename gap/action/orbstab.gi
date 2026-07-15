@@ -717,8 +717,6 @@ od;
     T := Subgroup( S, Concatenation( os.stab, Igs( T ) ) );
 
 
-Print("#I g4^2 in constructed subgroup: ", G.4^2 in T, "\n");
-
 Print("#I Ordinary stored generators:\n");
 for h in GeneratorsOfGroup(T) do
     Print("#I   ", h, " fixes e: ",
