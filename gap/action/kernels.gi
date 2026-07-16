@@ -235,31 +235,22 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         until Index( G, U ) = 1 or Index( U, K ) = 1;
 
         ok := true;
+        # verify if desired
         if Index( G, U ) > 1 and VERIFY@ then
             gens := Pcp( G, U );
             acts := InducedByPcp( pcp, gens, mats );
-            ok := VerifyIndependence( acts );
-            if not ok then
-                p := NextPrimeInt(p);
+            v := VerifyIndependence( acts );
+            if not v.indep then
+                rel := MappedVector( v.relation, gens );
+                U := SubgroupByIgs( G, AddToIgs( DenominatorOfPcp(gens), [ rel ] ) );
+                ok := false;   # go around again with the enlarged U
+            else
+                ok := true;
             fi;
-        fi;
-    until ok;
-
-    # verify if desired
-    if Index( G, U ) > 1 and VERIFY@ then
-        gens := Pcp( G, U );
-        acts := InducedByPcp( pcp, gens, mats );
-        v := VerifyIndependence( acts );
-        if not v.indep then
-            rel := MappedVector( v.relation, gens );
-            U := SubgroupByIgs( G, AddToIgs( DenominatorOfPcp(gens), [ rel ] ) );
-            ok := false;   # go around again with the enlarged U
         else
             ok := true;
         fi;
-    else
-        ok := true;
-    fi;
+    until ok;
 
     return U;
 end );
