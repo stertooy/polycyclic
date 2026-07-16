@@ -126,33 +126,32 @@ BindGlobal( "IsRelation", function( mats, rel )
     return M1 = M2;
 end );
 
+BindGlobal( "DiscriminantOfPoly", function( f )
+    local x, d;
+    x := IndeterminateOfLaurentPolynomial( f );
+    d := Resultant( f, Derivative(f), x );
+    return d / LeadingCoefficient( f );
+end );
+
 #############################################################################
 ##
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
-BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, refdim, gotdim;
+BindGlobal( "ApproxRelationLattice", function( mats, k, p, badp )
+    local lat, i, new;
 
     lat := IdentityMat( Length(mats) );
-    refdim := fail;
     i := 0;
     while i < k do
-        p := NextPrimeInt(p);
+        repeat
+            p := NextPrimeInt(p);
+        until badp = 0 or badp mod p <> 0;   # finitely many bad primes -> terminates
         new := RelationLatticeMod( mats, GF(p) );
-        gotdim := Length(mats) - RankMat(new);   # "free rank" seen mod p
-        if refdim = fail then
-            refdim := gotdim;
-        elif gotdim <> refdim then
-            continue;      # disagrees with earlier primes: likely a bad prime, skip it
-        fi;
         lat := LatticeIntersection( lat, new );
         i := i + 1;
     od;
 
-    # find short vectors
     lat := LLLReducedBasis( lat ).basis;
-
-    # did we find any relations?
     for i in [1..Length(lat)] do
         if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
     od;
@@ -216,18 +215,26 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps, ok;
+    local p, U, pcp, K, gens, acts, rell, tmps, base, prim, badp, ok;
 
     p := 1;
     U := DerivedSubgroup(G);
     pcp := Pcp( G );
+
+    base := AlgebraBase( mats );
+    if Length(base) > 1 then
+        prim := PrimitiveAlgebraElement( mats, base );
+        badp := DiscriminantOfPoly( prim.poly );
+    else
+        badp := 0;
+    fi;
 
     repeat
         repeat
             K := U;
             gens := Pcp( G, K );
             acts := InducedByPcp( pcp, gens, mats );
-            rell := ApproxRelationLattice( acts, Length(acts[1]), p );
+            rell := ApproxRelationLattice( acts, Length(acts[1]), p, badp );
             tmps := List( rell.rels, x -> MappedVector( x, gens ) );
             tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
             U := SubgroupByIgs( G, tmps );
@@ -240,7 +247,7 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
             acts := InducedByPcp( pcp, gens, mats );
             ok := VerifyIndependence( acts );
             if not ok then
-                p := NextPrimeInt(p);   # force progress with a fresh prime
+                p := NextPrimeInt(p);
             fi;
         fi;
     until ok;
