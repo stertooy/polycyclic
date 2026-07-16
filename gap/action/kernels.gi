@@ -130,11 +130,14 @@ end );
 ##
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
-BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, ind, len;
+BindGlobal( "ApproxRelationLattice", function( mats, k, p, arg... )
+    local lat, i, new;
 
-    # set up
-    lat := IdentityMat( Length(mats) );
+    if Length( arg ) = 0 then
+        lat := IdentityMat( Length( mats ) );
+    else
+        lat := arg[1];
+    fi;
 
     # compute new lattices and intersect
     for i in [1..k] do
@@ -150,7 +153,8 @@ BindGlobal( "ApproxRelationLattice", function( mats, k, p )
     for i in [1..Length(lat)] do
         if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
     od;
-    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
+    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p,
+                latt := lat );
 end );
 
 #############################################################################
@@ -210,7 +214,8 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps;
+    local p, U, pcp, K, gens, acts, latt, rell, tmps, rels,
+          d, done, independent;
 
     # set up
     p := 1;
@@ -222,11 +227,21 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
-        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
-        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-        U := SubgroupByIgs( G, tmps );
-        p := rell.prime;
+        latt := IdentityMat( Length( acts ) );
+        d := Length( acts[1] );
+
+        repeat
+            # Keep refining the same lattice while no new relations are
+            # found. Restarting from the identity lattice can miss a relation
+            # which needs more than one batch of congruence primes.
+            rell := ApproxRelationLattice( acts, d, p, latt );
+            p := rell.prime;
+            latt := rell.latt;
+            rels := rell.rels;
+            tmps := List( rels, x -> MappedVector( x, gens ) );
+            tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+            U := SubgroupByIgs( G, tmps );
+        until Index( G, U ) = 1 or Index( U, K ) >= 1;
     until Index( G, U ) = 1 or Index( U, K ) = 1;
 
     # verify if desired
@@ -348,5 +363,3 @@ BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
     e := -r{[2..Length(r)]} * r[1];
     return MappedVector( e, Pcp(G) );
 end );
-
-
