@@ -242,7 +242,7 @@ BindGlobal( "NormalizerOfComplement", function( C, H, N, I )
         # stabilize vector
         if Length( cc.factor.rels ) > 0 then
             Info( InfoPcpGrp, 2, "  H1 is of type ",cc.factor.rels);
-            e := cc.CocToFactor( cc, c );
+            e := cc.CocToFactor( cc, c - cc.sol );
             C := StabilizerOfCocycle( CR, cc, C, e );
         fi;
 
