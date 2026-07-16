@@ -38,7 +38,7 @@ end );
 BindGlobal( "VectorByComplement", function( CR, U )
     local fac, igs, nrm, nat, res, vec;
     fac := CR.factor;
-    if USE_CANONICAL_PCS@ := true then
+    if USE_CANONICAL_PCS@ then
         igs := Cgs(U);
     else
         nrm := SubgroupByIgs( CR.group, NumeratorOfPcp( CR.normal ) );
