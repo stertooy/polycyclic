@@ -229,7 +229,7 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps;
+    local p, U, pcp, K, gens, acts, rell, tmps, r, elm, U2;
 
     # set up
     p := 1;
