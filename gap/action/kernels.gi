@@ -246,61 +246,61 @@ end );
 ##
 #F KernelOfCongruenceMatrixActionALNUTH( G, mats ) . G acts as ss cong subgrp
 ##
-BindGlobal( "KernelOfCongruenceMatrixActionALNUTH", function( G, mats )
-    local H, base, prim, fact, full, f, s, h, imats, F, rels, gens;
-
-    # the trivial case
-    if ForAll( mats, x -> x^0 = x ) then return G; fi;
-
-    # split into irreducibles
-    base := AlgebraBase( mats );
-    prim := PrimitiveAlgebraElement( base, List( base, Flat ) );
-    fact := Factors( prim.poly );
-
-    # catch the trivial case first - for increased efficiency
-    if Length(fact) = 1 then
-        F := FieldByMatricesNC( mats );
-        SetPrimitiveElement( F, prim.elem );
-        SetDefiningPolynomial( F, prim.poly );
-        rels := RelationLatticeOfTFUnits( F, mats );
-        return Subgroup( G, List( rels, x -> MappedVector( x, Pcp(G) ) ) );
-    fi;
-
-    # loop over subspaces
-    full := mats[1]^0;
-    gens := AsList( Pcp(G) );
-    H := G;
-    for f in fact do
-
-        # induce matrices if necessary
-        if Index( G, H ) > 1 then
-            mats := List( rels, x -> MappedVector( x, mats ) );
-            G := H;
-        fi;
-
-        # get subspace
-        s := NullspaceRatMat( Value( f, prim.elem ) );
-        h := NaturalHomomorphismBySemiEchelonBases( full, s );
-
-        # induce to factor
-        imats := List( mats, x -> InducedActionSubspaceByNHSEB( x, h ) );
-        if ForAny( imats, x -> x <> x^0 ) then
-            F := FieldByMatricesNC( mats );
-            SetPrimitiveElement( F, prim.elem );
-            SetDefiningPolynomial( F, prim.poly );
-
-            # compute kernel
-            rels := RelationLatticeOfTFUnits( F, imats );
-
-            # set up for iteration
-            gens := List( rels, x -> MappedVector( x, gens ) );
-            H := Subgroup( G, gens );
-        fi;
-    od;
-
-    # that's it
-    return H;
-end );
+#BindGlobal( "KernelOfCongruenceMatrixActionALNUTH", function( G, mats )
+#    local H, base, prim, fact, full, f, s, h, imats, F, rels, gens;
+#
+#    # the trivial case
+#    if ForAll( mats, x -> x^0 = x ) then return G; fi;
+#
+#    # split into irreducibles
+#    base := AlgebraBase( mats );
+#    prim := PrimitiveAlgebraElement( base, List( base, Flat ) );
+#    fact := Factors( prim.poly );
+#
+#    # catch the trivial case first - for increased efficiency
+#    if Length(fact) = 1 then
+#        F := FieldByMatricesNC( mats );
+#        SetPrimitiveElement( F, prim.elem );
+#        SetDefiningPolynomial( F, prim.poly );
+#        rels := RelationLatticeOfTFUnits( F, mats );
+#        return Subgroup( G, List( rels, x -> MappedVector( x, Pcp(G) ) ) );
+#    fi;
+#
+#    # loop over subspaces
+#    full := mats[1]^0;
+#    gens := AsList( Pcp(G) );
+#    H := G;
+#    for f in fact do
+#
+#        # induce matrices if necessary
+#        if Index( G, H ) > 1 then
+#            mats := List( rels, x -> MappedVector( x, mats ) );
+#            G := H;
+#        fi;
+#
+#        # get subspace
+#        s := NullspaceRatMat( Value( f, prim.elem ) );
+#        h := NaturalHomomorphismBySemiEchelonBases( full, s );
+#
+#        # induce to factor
+#        imats := List( mats, x -> InducedActionSubspaceByNHSEB( x, h ) );
+#        if ForAny( imats, x -> x <> x^0 ) then
+#            F := FieldByMatricesNC( mats );
+#            SetPrimitiveElement( F, prim.elem );
+#            SetDefiningPolynomial( F, prim.poly );
+#
+#            # compute kernel
+#            rels := RelationLatticeOfTFUnits( F, imats );
+#
+#            # set up for iteration
+#            gens := List( rels, x -> MappedVector( x, gens ) );
+#            H := Subgroup( G, gens );
+#        fi;
+#    od;
+#
+#    # that's it
+#    return H;
+#end );
 
 #############################################################################
 ##
@@ -308,11 +308,11 @@ end );
 ##
 BindGlobal( "KernelOfCongruenceMatrixAction", function( G, mats )
     if ForAll( mats, x -> x = x^0 ) then return G; fi;
-    if USE_ALNUTH@ then
-        return KernelOfCongruenceMatrixActionALNUTH( G, mats );
-    else
+    #if USE_ALNUTH@ then
+    #    return KernelOfCongruenceMatrixActionALNUTH( G, mats );
+    #else
         return KernelOfCongruenceMatrixActionGAP( G, mats );
-    fi;
+    #fi;
 end );
 
 #############################################################################
