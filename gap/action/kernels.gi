@@ -130,11 +130,14 @@ end );
 ##
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
-BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, ind, len;
+BindGlobal( "ApproxRelationLattice", function( mats, k, p, arg... )
+    local lat, i, new;
 
-    # set up
-    lat := IdentityMat( Length(mats) );
+    if Length(arg) = 0 then
+        lat := IdentityMat( Length(mats) );
+    else
+        lat := arg[1];
+    fi;
 
     # compute new lattices and intersect
     for i in [1..k] do
@@ -150,7 +153,8 @@ BindGlobal( "ApproxRelationLattice", function( mats, k, p )
     for i in [1..Length(lat)] do
         if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
     od;
-    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
+    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p,
+                lattice := lat );
 end );
 
 #############################################################################
@@ -210,7 +214,8 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps;
+    local p, U, pcp, K, gens, acts, lat, rell, tmps, rels,
+          d, done, independent;
 
     # set up
     p := 1;
@@ -222,21 +227,42 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
-        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
-        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-        U := SubgroupByIgs( G, tmps );
-        p := rell.prime;
-    until Index( G, U ) = 1 or Index( U, K ) = 1;
+        lat := IdentityMat( Length(acts) );
+        d := Length( acts[1] );
 
-    # verify if desired
-    if Index( G, U ) > 1 and VERIFY@ then
-        gens := Pcp( G, U );
-        acts := InducedByPcp( pcp, gens, mats );
-        if not VerifyIndependence( acts ) then
-            Error("  generators are not linearly independent");
-        fi;
-    fi;
+        repeat
+            # Keep refining the same lattice while no new relations are
+            # found. Restarting from the identity lattice can miss a relation
+            # which needs more than one batch of congruence primes.
+            rell := ApproxRelationLattice( acts, d, p, lat );
+            p := rell.prime;
+            lat := rell.lattice;
+            rels := rell.rels;
+            tmps := List( rels, x -> MappedVector( x, gens ) );
+            tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+            U := SubgroupByIgs( G, tmps );
+
+            done := Index( G, U ) = 1;
+            if not done and Index( U, K ) = 1 then
+                if VERIFY@ then
+                    # A relation already found in the accumulated lattice
+                    # means that the current subgroup is complete. Otherwise
+                    # use VerifyIndependence when it can certify independence.
+                    if Length( rels ) > 0 then
+                        done := true;
+                    else
+                        independent := Length(acts) < Length(AlgebraBase(acts));
+                        if independent then
+                            independent := VerifyIndependence( acts );
+                        fi;
+                        done := independent;
+                    fi;
+                else
+                    done := true;
+                fi;
+            fi;
+        until done or Index( U, K ) > 1;
+    until done;
 
     # that's it
     return U;
@@ -348,5 +374,3 @@ BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
     e := -r{[2..Length(r)]} * r[1];
     return MappedVector( e, Pcp(G) );
 end );
-
-

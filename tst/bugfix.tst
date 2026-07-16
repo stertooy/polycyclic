@@ -202,11 +202,14 @@ gap> pcps := PcpsOfEfaSeries(G);
 gap> mats := AffineActionByElement( Pcp(G), pcps[4], G.2 );;
 gap> e := [ 0, 0, 0, 0, 1 ];
 [ 0, 0, 0, 0, 1 ]
+gap> old_use_alnuth := USE_ALNUTH@Polycyclic;;
+gap> USE_ALNUTH@Polycyclic := false;;
 gap> stab := StabilizerIntegralAction( G, mats, e );
 Pcp-group with orders [ 10, 0 ]
 gap> CheckStabilizer(G, stab, mats, e);
 #I  Stabilizer not increasing: exiting.
 true
+gap> USE_ALNUTH@Polycyclic := old_use_alnuth;;
 
 #
 # bug in AddToIgs: in infinite pcp groups, we must also take inverses of
