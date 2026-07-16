@@ -36,9 +36,16 @@ end );
 ##  bad hack ... igs and fac have to fit together.
 ##
 BindGlobal( "VectorByComplement", function( CR, U )
-    local fac, vec, igs;
+    local fac, igs, nrm, nat, res, vec;
     fac := CR.factor;
-    igs := Cgs(U);
+    if USE_CANONICAL_PCS@ := true then
+        igs := Cgs(U);
+    else
+        nrm := SubgroupByIgs( CR.group, NumeratorOfPcp( CR.normal ) );
+        nat := NaturalHomomorphismByNormalSubgroupNC( CR.group, nrm );
+        res := RestrictedMapping( nat, U );
+        igs := List( fac, g -> PreImagesRepresentativeNC( res, g ^ nat ) );
+    fi;
     vec := List( [1..Length(fac)], i ->
            ExponentsByPcp( CR.normal, fac[i]^-1 * igs[i] ) );
     return Flat(vec);
