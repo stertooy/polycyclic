@@ -133,8 +133,8 @@ end );
 BindGlobal( "ApproxRelationLattice", function( mats, k, p, arg... )
     local lat, i, new;
 
-    if Length(arg) = 0 then
-        lat := IdentityMat( Length(mats) );
+    if Length( arg ) = 0 then
+        lat := IdentityMat( Length( mats ) );
     else
         lat := arg[1];
     fi;
@@ -154,7 +154,7 @@ BindGlobal( "ApproxRelationLattice", function( mats, k, p, arg... )
         if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
     od;
     return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p,
-                lattice := lat );
+                latt := lat );
 end );
 
 #############################################################################
@@ -227,42 +227,31 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        lat := IdentityMat( Length(acts) );
+        latt := IdentityMat( Length(acts) );
         d := Length( acts[1] );
 
         repeat
             # Keep refining the same lattice while no new relations are
             # found. Restarting from the identity lattice can miss a relation
             # which needs more than one batch of congruence primes.
-            rell := ApproxRelationLattice( acts, d, p, lat );
+            rell := ApproxRelationLattice( acts, d, p, latt );
             p := rell.prime;
-            lat := rell.lattice;
+            latt := rell.lattice;
             rels := rell.rels;
             tmps := List( rels, x -> MappedVector( x, gens ) );
             tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
             U := SubgroupByIgs( G, tmps );
+        until Index( G, U ) = 1 or Index( U, K ) >= 1;
+    until Index( G, U ) = 1 or Index( U, K ) = 1;
 
-            done := Index( G, U ) = 1;
-            if not done and Index( U, K ) = 1 then
-                if VERIFY@ then
-                    # A relation already found in the accumulated lattice
-                    # means that the current subgroup is complete. Otherwise
-                    # use VerifyIndependence when it can certify independence.
-                    if Length( rels ) > 0 then
-                        done := true;
-                    else
-                        independent := Length(acts) < Length(AlgebraBase(acts));
-                        if independent then
-                            independent := VerifyIndependence( acts );
-                        fi;
-                        done := independent;
-                    fi;
-                else
-                    done := true;
-                fi;
-            fi;
-        until done or Index( U, K ) > 1;
-    until done;
+    # verify if desired
+    if Index( G, U ) > 1 and VERIFY@ then
+        gens := Pcp( G, U );
+        acts := InducedByPcp( pcp, gens, mats );
+        if not VerifyIndependence( acts ) then
+            Error("  generators are not linearly independent");
+        fi;
+    fi;
 
     # that's it
     return U;
