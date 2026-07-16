@@ -331,22 +331,22 @@ end );
 ##
 ## So far, this works only if G is an integral group.
 ##
-BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
-    local F, r, e;
-
-    # get field
-    F := FieldByMatricesNC( mats );
-
-    # check whether m is a unit in F
-    if not IsUnitOfNumberField( F, m ) then return false; fi;
-
-    # check if m is in G
-    r := RelationLatticeOfUnits( F, Concatenation( [m], mats ) )[1];
-    if PositionNonZero( r ) > 1 or AbsInt( r[1] ) <> 1 then return false; fi;
-
-    # now translate to G
-    e := -r{[2..Length(r)]} * r[1];
-    return MappedVector( e, Pcp(G) );
-end );
+#BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
+#    local F, r, e;
+#
+#    # get field
+#    F := FieldByMatricesNC( mats );
+#
+#    # check whether m is a unit in F
+#    if not IsUnitOfNumberField( F, m ) then return false; fi;
+#
+#    # check if m is in G
+#    r := RelationLatticeOfUnits( F, Concatenation( [m], mats ) )[1];
+#    if PositionNonZero( r ) > 1 or AbsInt( r[1] ) <> 1 then return false; fi;
+#
+#    # now translate to G
+#    e := -r{[2..Length(r)]} * r[1];
+#    return MappedVector( e, Pcp(G) );
+#end );
 
 
