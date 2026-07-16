@@ -248,21 +248,14 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         p := rell.prime;
     until Index( G, U ) = 1 or Index( U, K ) = 1;
 
-# verify if desired
-if Index( G, U ) > 1 and VERIFY@ then
-    gens := Pcp( G, U );
-    acts := InducedByPcp( pcp, gens, mats );
-
-    Print("\n--- Kernel diagnostic ---\n");
-    Print("number of generators: ", Length(gens), "\n");
-    Print("matrix degree:         ", Length(acts[1]), "\n");
-    Print("algebra dimension:     ", Length(AlgebraBase(acts)), "\n");
-    Print("denominator:           ", DenominatorOfPcp(gens), "\n");
-    Print("generators:\n", AsList(gens), "\n");
-    Print("actions:\n", acts, "\n");
-
-    #Error("stop after kernel diagnostic");
-fi;
+    # verify if desired
+    if Index( G, U ) > 1 and VERIFY@ then
+        gens := Pcp( G, U );
+        acts := InducedByPcp( pcp, gens, mats );
+        if not VerifyIndependence( acts ) then
+            Error("  generators are not linearly independent");
+        fi;
+    fi;
 
     # that's it
     return U;
