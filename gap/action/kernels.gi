@@ -214,7 +214,7 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, lat, rell, tmps, rels,
+    local p, U, pcp, K, gens, acts, latt, rell, tmps, rels,
           d, done, independent;
 
     # set up
@@ -227,7 +227,7 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         K := U;
         gens := Pcp( G, K );
         acts := InducedByPcp( pcp, gens, mats );
-        latt := IdentityMat( Length(acts) );
+        latt := IdentityMat( Length( acts ) );
         d := Length( acts[1] );
 
         repeat
@@ -236,7 +236,7 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
             # which needs more than one batch of congruence primes.
             rell := ApproxRelationLattice( acts, d, p, latt );
             p := rell.prime;
-            latt := rell.lattice;
+            latt := rell.latt;
             rels := rell.rels;
             tmps := List( rels, x -> MappedVector( x, gens ) );
             tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
