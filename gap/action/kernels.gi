@@ -165,45 +165,38 @@ end );
 BindGlobal( "VerifyIndependence", function( mats )
     local base, prim, dixn, done, L, p, i, N, w, d;
 
-    if Length( mats ) = 1 and mats[1] <> mats[1]^0 then return true; fi;
+    if Length( mats ) = 1 and mats[1] <> mats[1]^0 then
+        return rec( indep := true );
+    fi;
 
-    Print("   verifying linear independence \n");
     base := AlgebraBase( mats );
     d := Length( base );
-    Print("     got ", Length( mats ), " generators and dimension ", d,"\n");
 
-    if Length( mats ) >= d then return false; fi;
-    prim := PrimitiveAlgebraElement( mats, base );
-    Print("     computing dixon bound \n");
-    dixn := Length(mats[1]) * LogDixonBound( mats, prim )^2;
-    Print("     found ", dixn, "\n");
-    done := false;
-
-    # set up
     L := IdentityMat( Length(mats) );
     p := 1;
 
-    while not done do
-        Print("     next step verification \n");
+    if Length( mats ) < d then
+        prim := PrimitiveAlgebraElement( mats, base );
+        dixn := Length(mats[1]) * LogDixonBound( mats, prim )^2;
+    else
+        dixn := -1;   # a relation is guaranteed to exist; just search for it, no bound needed
+    fi;
 
-        # compute new lattices and intersect
-        for i in [1..d] do
+    while true do
+        for i in [1..Maximum(d,2)] do
             p := NextPrimeInt(p);
             N := RelationLatticeMod( mats, GF(p) );
             L := LatticeIntersection( L, N );
         od;
-
-        # find short vectors
         L := LLLReducedBasis( L ).basis;
         w := Minimum( List( L, x -> x * x ) );
-        Print("     got shortest vector ", w, "\n");
-
-        # check dixon bound
-        if w > dixn then return true; fi;
-
-        # check rels
+        if dixn >= 0 and w > dixn then
+            return rec( indep := true );
+        fi;
         for i in [1..Length(L)] do
-            if IsRelation( mats, L[i] ) then return false; fi;
+            if IsRelation( mats, L[i] ) then
+                return rec( indep := false, relation := L[i] );
+            fi;
         od;
     od;
 end );
@@ -256,9 +249,16 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
     if Index( G, U ) > 1 and VERIFY@ then
         gens := Pcp( G, U );
         acts := InducedByPcp( pcp, gens, mats );
-        if not VerifyIndependence( acts ) then
-            Error("  generators are not linearly independent");
+        v := VerifyIndependence( acts );
+        if not v.indep then
+            rel := MappedVector( v.relation, gens );
+            U := SubgroupByIgs( G, AddToIgs( DenominatorOfPcp(gens), [ rel ] ) );
+            ok := false;   # go around again with the enlarged U
+        else
+            ok := true;
         fi;
+    else
+        ok := true;
     fi;
 
     return U;
