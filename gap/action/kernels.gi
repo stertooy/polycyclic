@@ -248,14 +248,48 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         p := rell.prime;
     until Index( G, U ) = 1 or Index( U, K ) = 1;
 
-    # verify if desired
-    if Index( G, U ) > 1 and VERIFY@ then
-        gens := Pcp( G, U );
-        acts := InducedByPcp( pcp, gens, mats );
-        if not VerifyIndependence( acts ) then
-            Error("  generators are not linearly independent");
-        fi;
+# verify if desired
+if Index( G, U ) > 1 and VERIFY@ then
+    gens := Pcp( G, U );
+    acts := InducedByPcp( pcp, gens, mats );
+
+    Print("\n--- relation diagnostic ---\n");
+    Print("gens = ", AsList(gens), "\n");
+    Print("denominator = ", DenominatorOfPcp(gens), "\n");
+    Print("acts[1]^10 = acts[2]^7: ",
+          acts[1]^10 = acts[2]^7, "\n");
+    Print("IsRelation([10,-7]): ",
+          IsRelation(acts, [10,-7]), "\n");
+
+    Print("last relations returned: ", rell.rels, "\n");
+
+    for r in rell.rels do
+        elm := MappedVector(r, gens);
+
+        Print(
+            "relation = ", r,
+            ", gcd = ", Gcd(List(r, AbsInt)),
+            ", exact = ", IsRelation(acts, r),
+            ", element = ", elm,
+            ", element in U = ", elm in U,
+            "\n"
+        );
+    od;
+
+    r := [10,-7];
+    elm := MappedVector(r, gens);
+    tmps := AddToIgs(DenominatorOfPcp(gens), [elm]);
+    U2 := SubgroupByIgs(G, tmps);
+
+    Print("known relation maps to: ", elm, "\n");
+    Print("known relation element in U: ", elm in U, "\n");
+    Print("Index(U2,U): ", Index(U2,U), "\n");
+    Print("Index(G,U2): ", Index(G,U2), "\n");
+
+    if not VerifyIndependence(acts) then
+        Error("generators are not linearly independent");
     fi;
+fi;
 
     # that's it
     return U;
