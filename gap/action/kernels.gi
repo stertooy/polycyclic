@@ -131,45 +131,32 @@ end );
 #F ApproxRelationLattice( mats, k, p ). .  . . . . . . . k step approximation
 ##
 BindGlobal( "ApproxRelationLattice", function( mats, k, p )
-    local lat, i, new, ind, len, g, rel;
+    local lat, i, new, refdim, gotdim;
 
-    # set up
     lat := IdentityMat( Length(mats) );
-
-    # compute new lattices and intersect
-    for i in [1..k] do
+    refdim := fail;
+    i := 0;
+    while i < k do
         p := NextPrimeInt(p);
         new := RelationLatticeMod( mats, GF(p) );
+        gotdim := Length(mats) - RankMat(new);   # "free rank" seen mod p
+        if refdim = fail then
+            refdim := gotdim;
+        elif gotdim <> refdim then
+            continue;      # disagrees with earlier primes: likely a bad prime, skip it
+        fi;
         lat := LatticeIntersection( lat, new );
+        i := i + 1;
     od;
 
     # find short vectors
     lat := LLLReducedBasis( lat ).basis;
 
-    # Find exact relations and make them primitive where possible.
+    # did we find any relations?
     for i in [1..Length(lat)] do
-        if IsRelation( mats, lat[i] ) then
-            g := Gcd( List( lat[i], AbsInt ) );
-
-            if g > 1 then
-                rel := List( lat[i], x -> x / g );
-
-                # Only replace it when the primitive vector is itself
-                # an exact relation. This also avoids assumptions about
-                # possible torsion in the matrix group.
-                if IsRelation( mats, rel ) then
-                    lat[i] := rel;
-                fi;
-            fi;
-        else
-            lat[i] := false;
-        fi;
+        if not IsRelation( mats, lat[i] ) then lat[i] := false; fi;
     od;
-
-    return rec(
-        rels  := Filtered( lat, x -> not IsBool(x) ),
-        prime := p
-    );
+    return rec( rels := Filtered( lat, x -> not IsBool(x) ), prime := p );
 end );
 
 #############################################################################
@@ -229,69 +216,44 @@ end );
 ## Warning: G must be integral!
 ##
 BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
-    local p, U, pcp, K, gens, acts, rell, tmps, r, elm, U2;
+    local p, U, pcp, K, gens, acts, rell, tmps, ok;
 
-    # set up
     p := 1;
     U := DerivedSubgroup(G);
     pcp := Pcp( G );
 
-    # now loop
     repeat
-        K := U;
-        gens := Pcp( G, K );
+        repeat
+            K := U;
+            gens := Pcp( G, K );
+            acts := InducedByPcp( pcp, gens, mats );
+            rell := ApproxRelationLattice( acts, Length(acts[1]), p );
+            tmps := List( rell.rels, x -> MappedVector( x, gens ) );
+            tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
+            U := SubgroupByIgs( G, tmps );
+            p := rell.prime;
+        until Index( G, U ) = 1 or Index( U, K ) = 1;
+
+        ok := true;
+        if Index( G, U ) > 1 and VERIFY@ then
+            gens := Pcp( G, U );
+            acts := InducedByPcp( pcp, gens, mats );
+            ok := VerifyIndependence( acts );
+            if not ok then
+                p := NextPrimeInt(p);   # force progress with a fresh prime
+            fi;
+        fi;
+    until ok;
+
+    # verify if desired
+    if Index( G, U ) > 1 and VERIFY@ then
+        gens := Pcp( G, U );
         acts := InducedByPcp( pcp, gens, mats );
-        rell := ApproxRelationLattice( acts, Length(acts[1]), p );
-        tmps := List( rell.rels, x -> MappedVector( x, gens ) );
-        tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
-        U := SubgroupByIgs( G, tmps );
-        p := rell.prime;
-    until Index( G, U ) = 1 or Index( U, K ) = 1;
-
-# verify if desired
-if Index( G, U ) > 1 and VERIFY@ then
-    gens := Pcp( G, U );
-    acts := InducedByPcp( pcp, gens, mats );
-
-    Print("\n--- relation diagnostic ---\n");
-    Print("gens = ", AsList(gens), "\n");
-    Print("denominator = ", DenominatorOfPcp(gens), "\n");
-    Print("acts[1]^10 = acts[2]^7: ",
-          acts[1]^10 = acts[2]^7, "\n");
-    Print("IsRelation([10,-7]): ",
-          IsRelation(acts, [10,-7]), "\n");
-
-    Print("last relations returned: ", rell.rels, "\n");
-
-    for r in rell.rels do
-        elm := MappedVector(r, gens);
-
-        Print(
-            "relation = ", r,
-            ", gcd = ", Gcd(List(r, AbsInt)),
-            ", exact = ", IsRelation(acts, r),
-            ", element = ", elm,
-            ", element in U = ", elm in U,
-            "\n"
-        );
-    od;
-
-    r := [10,-7];
-    elm := MappedVector(r, gens);
-    tmps := AddToIgs(DenominatorOfPcp(gens), [elm]);
-    U2 := SubgroupByIgs(G, tmps);
-
-    Print("known relation maps to: ", elm, "\n");
-    Print("known relation element in U: ", elm in U, "\n");
-    Print("Index(U2,U): ", Index(U2,U), "\n");
-    Print("Index(G,U2): ", Index(G,U2), "\n");
-
-    if not VerifyIndependence(acts) then
-        Error("generators are not linearly independent");
+        if not VerifyIndependence( acts ) then
+            Error("  generators are not linearly independent");
+        fi;
     fi;
-fi;
 
-    # that's it
     return U;
 end );
 
@@ -401,4 +363,5 @@ BindGlobal( "MemberByCongruenceMatrixAction", function( G, mats, m )
     e := -r{[2..Length(r)]} * r[1];
     return MappedVector( e, Pcp(G) );
 end );
+
 
