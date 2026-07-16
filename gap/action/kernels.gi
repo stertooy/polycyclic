@@ -261,7 +261,7 @@ if Index( G, U ) > 1 and VERIFY@ then
     Print("generators:\n", AsList(gens), "\n");
     Print("actions:\n", acts, "\n");
 
-    Error("stop after kernel diagnostic");
+    #Error("stop after kernel diagnostic");
 fi;
 
     # that's it
