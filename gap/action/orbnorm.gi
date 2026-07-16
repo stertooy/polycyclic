@@ -82,28 +82,28 @@ end );
 ## V is a homogenous G-module via linG (and thus linG spans a field).
 ## U is a subspace of V and baseU is an echelonised basis for U.
 ##
-BindGlobal( "NormalizerHomogeneousAction", function( G, linG, baseU )
-    local K, baseK, baseL, L, exp, U, linU;
-
-    # check for trivial cases
-    if ForAll(linG, x -> x = x^0) or Length(baseU) = 0 or
-       Length(baseU) = Length(baseU[1]) then return G;
-    fi;
-
-    # get field
-    K := FieldByMatricesNC( linG );
-    baseK := BasisVectors( Basis( K ) );
-
-    # determine normalizing subfield and its units
-    baseL := BasisOfNormalizingSubfield( baseK, baseU );
-    L := FieldByMatrixBasisNC( baseL );
-    U := UnitGroup( L );
-    linU := GeneratorsOfGroup(U);
-
-    # find G cap L = G cap U as subgroup of G
-    exp := IntersectionOfUnitSubgroups( K, linG, linU );
-    return Subgroup( G, List( exp, x -> MappedVector( x, Pcp(G) ) ) );
-end );
+#BindGlobal( "NormalizerHomogeneousAction", function( G, linG, baseU )
+#    local K, baseK, baseL, L, exp, U, linU;
+#
+#    # check for trivial cases
+#    if ForAll(linG, x -> x = x^0) or Length(baseU) = 0 or
+# Length(baseU) = Length(baseU[1]) then return G;
+#    fi;
+#
+#    # get field
+#    K := FieldByMatricesNC( linG );
+#    baseK := BasisVectors( Basis( K ) );
+#
+#    # determine normalizing subfield and its units
+#    baseL := BasisOfNormalizingSubfield( baseK, baseU );
+#    L := FieldByMatrixBasisNC( baseL );
+#    U := UnitGroup( L );
+#    linU := GeneratorsOfGroup(U);
+#
+#    # find G cap L = G cap U as subgroup of G
+#    exp := IntersectionOfUnitSubgroups( K, linG, linU );
+#    return Subgroup( G, List( exp, x -> MappedVector( x, Pcp(G) ) ) );
+#end );
 
 #############################################################################
 ##
@@ -141,54 +141,54 @@ end );
 ## baseU and baseW, respectively. The function computes N_G(U) and U^g = W if
 ## g exists. If no g exists, then false is returned.
 ##
-BindGlobal( "ConjugacyHomogeneousAction", function( G, linG, baseU, baseW )
-    local K, baseK, baseL, L, U, a, f, b, C, g, N, k, h;
-
-    # check for trivial cases
-    if Length(baseU) <> Length(baseW) then return false; fi;
-    if baseU = baseW then
-       return rec( norm := NormalizerHomogeneousAction( G, linG, baseU ),
-                   conj := One(G) );
-    fi;
-
-    # get field - we need the maximal order in this case!
-    K := FieldByMatricesNC( linG );
-    baseK := BasisVectors( MaximalOrderBasis( K ) );
-
-    # determine conjugating field element
-    k := ConjugatingFieldElement( baseK, baseW, baseU );
-    if IsBool(k) then return false; fi;
-    h := k^-1;
-
-    # determine normalizing subfield
-    baseL := BasisOfNormalizingSubfield( baseK, baseU );
-    L := FieldByMatrixBasisNC( baseL );
-
-    # get norm and root
-    a := Determinant( k );
-    f := Length(baseK) / Length(baseL);
-    b := RootInt( a, f );
-    if b^f <> a then return false; fi;
-
-    # solve norm equation in L and sift
-    C := NormCosetsOfNumberField( L, b );
-    C := List( C, x -> x * h );
-    C := Filtered( C, x -> IsUnitOfNumberField( K, x ) );
-    if Length(C) = 0 then return false; fi;
-
-    # add unit group of L
-    U := GeneratorsOfGroup(UnitGroup(L));
-    C := rec( reprs := C, units := U{[2..Length(U)]} );
-
-    # find an element of G cap Lh in G
-    h := IntersectionOfTFUnitsByCosets( K, linG, C );
-    if IsBool( h ) then return false; fi;
-    g := MappedVector( h.repr, Pcp(G) );
-    N := Subgroup( G, List( h.ints, x -> MappedVector( x, Pcp(G) ) ) );
-
-    # that's it
-    return rec( norm := N, conj := g );
-end );
+#BindGlobal( "ConjugacyHomogeneousAction", function( G, linG, baseU, baseW )
+#    local K, baseK, baseL, L, U, a, f, b, C, g, N, k, h;
+#
+#    # check for trivial cases
+#    if Length(baseU) <> Length(baseW) then return false; fi;
+#    if baseU = baseW then
+#       return rec( norm := NormalizerHomogeneousAction( G, linG, baseU ),
+#                   conj := One(G) );
+#    fi;
+#
+#    # get field - we need the maximal order in this case!
+#    K := FieldByMatricesNC( linG );
+#    baseK := BasisVectors( MaximalOrderBasis( K ) );
+#
+#    # determine conjugating field element
+#    k := ConjugatingFieldElement( baseK, baseW, baseU );
+#    if IsBool(k) then return false; fi;
+#    h := k^-1;
+#
+#    # determine normalizing subfield
+#    baseL := BasisOfNormalizingSubfield( baseK, baseU );
+#    L := FieldByMatrixBasisNC( baseL );
+#
+#    # get norm and root
+#    a := Determinant( k );
+#    f := Length(baseK) / Length(baseL);
+#    b := RootInt( a, f );
+#    if b^f <> a then return false; fi;
+#
+#    # solve norm equation in L and sift
+#    C := NormCosetsOfNumberField( L, b );
+#    C := List( C, x -> x * h );
+#    C := Filtered( C, x -> IsUnitOfNumberField( K, x ) );
+#    if Length(C) = 0 then return false; fi;
+#
+#    # add unit group of L
+#    U := GeneratorsOfGroup(UnitGroup(L));
+#    C := rec( reprs := C, units := U{[2..Length(U)]} );
+#
+#    # find an element of G cap Lh in G
+#    h := IntersectionOfTFUnitsByCosets( K, linG, C );
+#    if IsBool( h ) then return false; fi;
+#    g := MappedVector( h.repr, Pcp(G) );
+#    N := Subgroup( G, List( h.ints, x -> MappedVector( x, Pcp(G) ) ) );
+#
+#    # that's it
+#    return rec( norm := N, conj := g );
+#end );
 
 #############################################################################
 ##
@@ -266,27 +266,27 @@ end );
 ##
 #F ConjugacyComplements( G, linG, baseU, baseW, baseS ) . . . . . . .U^g = W?
 ##
-BindGlobal( "ConjugacyComplements", function( G, linG, baseU, baseW, baseS )
-    local baseT, nathT, affG, e, f, os;
-
-    # catch the trivial cases
-    if Length(baseU)<>Length(baseW) then return false; fi;
-    if baseU = baseW then return
-        rec( norm := NormalizerComplement( G, linG, baseU, baseS ),
-             conj := One(G) );
-    fi;
-
-    baseT := LatticeBasis( Concatenation( baseU, baseS ) );
-    nathT := NaturalHomomorphismByLattices( baseT, baseS );
-
-    # compute the stabilizer of (0,..,0,1) under an affine action
-    affG := AffineActionAsTensor( linG, nathT );
-    e := DifferenceVector( baseU, nathT );
-    f := DifferenceVector( baseW, nathT );
-    os := OrbitIntegralAction( G, affG, e, f );
-    if IsBool(os) then return os; fi;
-    return rec( norm := os.stab, conj := os.prei );
-end );
+#BindGlobal( "ConjugacyComplements", function( G, linG, baseU, baseW, baseS )
+#    local baseT, nathT, affG, e, f, os;
+#
+#    # catch the trivial cases
+#    if Length(baseU)<>Length(baseW) then return false; fi;
+#    if baseU = baseW then return
+#        rec( norm := NormalizerComplement( G, linG, baseU, baseS ),
+#             conj := One(G) );
+#    fi;
+#
+#    baseT := LatticeBasis( Concatenation( baseU, baseS ) );
+#    nathT := NaturalHomomorphismByLattices( baseT, baseS );
+#
+#    # compute the stabilizer of (0,..,0,1) under an affine action
+#    affG := AffineActionAsTensor( linG, nathT );
+#    e := DifferenceVector( baseU, nathT );
+#    f := DifferenceVector( baseW, nathT );
+#    os := OrbitIntegralAction( G, affG, e, f );
+#    if IsBool(os) then return os; fi;
+#    return rec( norm := os.stab, conj := os.prei );
+#end );
 
 #############################################################################
 ##
