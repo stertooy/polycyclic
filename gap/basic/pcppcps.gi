@@ -283,13 +283,7 @@ end );
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, S1, S2, G;
 
-    coll := Collector( pcs1[1] );
-    G := PcpGroupByCollector( coll );
-    S1 := Subgroup( G, AsList(pcs1) );
-    S2 := Subgroup( G, AsList(pcs2) );
-    if not IsNormal( S1, S2 ) then
-        Error("AddIgsToIgs with non-normal!");
-    fi;
+
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
     elif Length( pcs2 ) = 0 then
@@ -301,6 +295,13 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     fi;
 
     # merge the two pcs'
+    coll := Collector( pcs1[1] );
+    G := PcpGroupByCollector( coll );
+    S1 := Subgroup( G, AsList(pcs1) );
+    S2 := Subgroup( G, AsList(pcs2) );
+    if not IsNormal( S1, S2 ) then
+        Error("AddIgsToIgs with non-normal!");
+    fi;
     rels := RelativeOrders( coll );
     n    := NumberOfGenerators( coll );
     ind  := List( [1..n], x -> false );
