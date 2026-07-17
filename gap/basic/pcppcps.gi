@@ -299,6 +299,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     G := PcpGroupByCollector( coll );
     S1 := Subgroup( G, AsList(pcs1) );
     S2 := Subgroup( G, AsList(pcs2) );
+    bad := false;
     if not IsNormal( S1, S2 ) then
         bad := true;
         Print("DEBUG: AddIgsToIgs with non-normal!");
