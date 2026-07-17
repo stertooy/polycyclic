@@ -197,7 +197,7 @@ function( pcs, gens, ppcs, pgens )
 
         # adjust
         c := TailLimit(ind, c);
-        ReduceExpoPara(ind, todo, indd, tododo,  rels);
+        ReduceExpoPara(ind, todo, indd, tododo, rels);
 
         # add powers and commutators
         for d in f do

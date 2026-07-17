@@ -190,7 +190,7 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
         # shift g into ind
         while d < c do
-        
+
             h := ind[d];
 
             if IsBool(h) then
@@ -205,15 +205,12 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
                 pair := GcdPcp(g, h);
                 h := pair[1];
                 g := pair[2];
-                # Now g and h still generated same subgroup as before
                 if h <> ind[d] then
                     ind[d] := NormedPcpElement( h );
                     AddSet(f, d);
                 fi;
             fi;
-
             d := Depth(g);
-
         od;
 
         # adjust
@@ -314,24 +311,6 @@ end );
 ## factor. Typically, <pcs1> is induced wrt to a pcp and <pcs2> is the
 ## denominator of this pcp.
 ##
-BindGlobal( "AddIgsToIgs_new", function( pcs1, pcs2 )
-    local ind, t;
-
-    if Length( pcs1 ) = 0 then
-        return AsList( pcs2 );
-    elif Length( pcs2 ) = 0 then
-        return AsList( pcs1 );
-    fi;
-
-    ind := AddToIgs( pcs2, pcs1 );
-    if CHECK_IGS@ then
-        Info(InfoPcpGrp, 1, "checking igs ");
-        t := CheckIgs(ind, Concatenation(pcs1, pcs2) );
-        if t <> true then Error("igs is incorrect at ",t); fi;
-    fi;
-    return ind;
-end );
-
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, pair, t, val, j;
 
@@ -360,12 +339,10 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         fi;
     od;
     
-
     # set counter
     c := TailLimit(ind, n+1);
     todo := Filtered( todo, x -> Depth( x ) < c );
     val := List(todo, x -> IGSValFun(x));
-    
     
     # loop over to-do list until it is empty
     while Length( todo ) > 0 and c > 1 do
@@ -377,12 +354,6 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         while d < c do
             h := ind[d];
             if not IsBool( h ) then
-
-                # reduce g with h
-                #eg := LeadingExponent( g );
-                #eh := LeadingExponent( h );
-                #e  := Gcdex( eg, eh );
-
                 # adjust g and ind[d] by gcd
                 pair := GcdPcp( ind[d], g );
                 ind[d] := pair[1];
@@ -391,7 +362,6 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
                 ind[d] := g;
                 g      := g^0;
             fi;
-            #c := UpdateCounter( ind, todo, c );
             d := Depth( g );
         od;
         c := TailLimit(ind, c);

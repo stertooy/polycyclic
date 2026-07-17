@@ -114,13 +114,10 @@ function( N, U )
         # compute sum and intersection
         while al <> id and ls[d] <> id do
             pairs := GcdPcpPara( ls[d], al, rs[d], ar );
-            
-            al := pairs[2];
             ls[d] := pairs[1];
-            
-            ar := pairs[4];
+            al := pairs[2];
             rs[d] := pairs[3];
-
+            ar := pairs[4];
             ReduceExpoParaInt( ls, rs, todo, rels );
             d := Depth( al );
         od;
@@ -155,7 +152,6 @@ function( N, U )
                 is[d] := ar;
             fi;
         fi;
-        
     od;
 
     # sum := Filtered( ls, x -> x <> id );
