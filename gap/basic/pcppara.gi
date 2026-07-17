@@ -34,6 +34,52 @@ BindGlobal( "NormedPcpElementPara", function( g, gg )
     return [ h, hh ];
 end );
 
+####################################################################
+##
+#F GcdPcpPara
+##
+BindGlobal( "GcdPcpPara", function(g, h, i, j)
+    local x, y, a, b, q, r, t, z, w, u;
+
+    x := g;
+    y := h;
+
+    a := LeadingExponent(x);
+    b := LeadingExponent(y);
+
+    z := i;
+    w := j;
+    
+    if a < 0 then
+        x := x^-1;
+        z := z^-1;
+        a := LeadingExponent(x);
+    fi;
+    if b < 0 then
+        y := y^-1;
+        w := w^-1;
+        b := LeadingExponent(y);
+    fi;
+
+    while b <> 0 do
+        q := QuoInt(a, b);
+        r := a - q * b;
+
+        t := x * y ^ -q;
+        x := y;
+        y := t;
+
+        u := z * w ^ -q;
+        z := w;
+        w := u;
+
+        a := b;
+        b := r;
+    od;
+
+    return [x, y, z, w];
+end );
+
 #############################################################################
 ##
 #F ReduceExpoPara( ind, gen, indd, pgen, rel )

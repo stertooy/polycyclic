@@ -3,55 +3,33 @@
 #W  grpint.gi                  Polycyc                           Bettina Eick
 ##
 
+# Variant of ReduceExpoPara, but with IsOne's instead of IsBool's
+BindGlobal( "ReduceExpoParaInt", function( ind, indd, gen, rel )
+    local i, j, a, b, q, f, k;
 
-####################################################################
-##
-#F GcdPcp
-##
-BindGlobal( "GcdPcpPara", function(g, h, i, j)
-    local x, y, a, b, q, r, t, z, w, u;
-
-    x := g;
-    y := h;
-
-
-    a := LeadingExponent(x);
-    b := LeadingExponent(y);
-
-
-    z := i;
-    w := j;
-
-    
-    if a < 0 then
-        x := x^-1;
-        z := z^-1;
-        a := LeadingExponent(x);
-    fi;
-    if b < 0 then
-        y := y^-1;
-        w := w^-1;
-        b := LeadingExponent(y);
-    fi;
-
-    while b <> 0 do
-        q := QuoInt(a, b);
-        r := a - q * b;
-
-        t := x * y ^ -q;
-        x := y;
-        y := t;
-
-
-        u := z * w ^ -q;
-        z := w;
-        w := u;
-
-        a := b;
-        b := r;
+    for i in [1..Length(ind)] do
+        if not IsOne(ind[i]) and rel[i]=0 then
+            b := LeadingExponent(ind[i]);
+            for j in [1..i-1] do
+                if not IsOne( ind[j] ) then
+                    a := Exponents(ind[j])[i];
+                    q := QuoInt(a,b);
+                    if q <> 0 then
+                        ind[j] := ind[j]*ind[i]^-q;
+                        indd[j] := indd[j]*indd[i]^-q;
+                    fi;
+                fi;
+            od;
+            for j in [1..Length(gen)] do
+                a := Exponents(gen[j][1])[i];
+                q := QuoInt(a,b);
+                if q <> 0 then
+                    gen[j][1] := gen[j][1]*ind[i]^-q;
+                    gen[j][2] := gen[j][2]*indd[i]^-q;
+                fi;
+            od;
+        fi;
     od;
-
-    return [x, y, z, w];
 end );
 
 #############################################################################
@@ -69,14 +47,15 @@ end );
 InstallMethod( NormalIntersection, "for pcp groups",
                IsIdenticalObj, [IsPcpGroup, IsPcpGroup],
 function( N, U )
-    local G, coll, rels, igs, igsN, igsU, n, s, todo, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs, left, rght;
+    local G, coll, rels, igs, igsN, igsU, n, s, todo, I, id, ls, rs, is, g, d,
+          al, ar, e, tm, pairs;
 
 	# get common overgroup of N and U
     coll := Collector( N );
-    rels := RelativeOrders(coll);
-	G := PcpGroupByCollector( coll );
+    rels := RelativeOrders( coll );
+	G    := PcpGroupByCollector( coll );
 
-    igs  := Igs(G);
+    igs  := Igs( G );
     igsN := Cgs( N );
     igsU := Cgs( U );
     n    := Length( igs );
@@ -89,7 +68,7 @@ function( N, U )
     fi;
 
     # if N or U are equal to G
-    if Length( igsN ) = n and ForAll(igsN, x -> LeadingExponent(x) = 1) then
+    if Length(igsN) = n and ForAll(igsN, x -> LeadingExponent(x) = 1) then
         return U;
     elif Length(igsU) = n and ForAll(igsU, x -> LeadingExponent(x) = 1) then
         return N;
@@ -141,12 +120,8 @@ function( N, U )
             
             ar := pairs[4];
             rs[d] := pairs[3];
-			# left-rght thing here is a bit ugly
-			# but lets us reuse the function from parallel igs
-            left := List( todo, i -> i[1] );
-			rght := List( todo, i -> i[2] );
-            ReduceExpoPara( ls, left, rs, rght, rels );
-            todo := List( [1..Length(todo)], i -> [ left[i], rght[i] ] );
+
+            ReduceExpoParaInt( ls, rs, todo, rels );
             d := Depth( al );
         od;
 
