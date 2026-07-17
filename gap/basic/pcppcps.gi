@@ -349,6 +349,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
             d := Depth( g );
         od;
     od;
+    ind := Filtered( ind, x -> not IsBool( x ) );
     if bad then
         Print("DEBUG: ",ind,"\n");
     fi;
@@ -357,7 +358,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         t := CheckIgs(ind, Concatenation(AsList(pcs1),AsList(pcs2)));
         if t <> true then Error("igs is incorrect at ",t); fi;
     fi;
-    return Filtered( ind, x -> not IsBool( x ) );
+    return ind;
 end );
 
 #############################################################################
