@@ -281,8 +281,7 @@ end );
 ## denominator of this pcp.
 ##
 BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
-    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, S1, S2, G, bad, t;
-
+    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, t;
 
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
@@ -296,14 +295,6 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
 
     # merge the two pcs'
     coll := Collector( pcs1[1] );
-    G := PcpGroupByCollector( coll );
-    S1 := Subgroup( G, AsList(pcs1) );
-    S2 := Subgroup( G, AsList(pcs2) );
-    bad := false;
-    if not IsNormal( S1, S2 ) then
-        bad := true;
-        Print("DEBUG: AddIgsToIgs with non-normal!");
-    fi;
     rels := RelativeOrders( coll );
     n    := NumberOfGenerators( coll );
     ind  := List( [1..n], x -> false );
@@ -350,9 +341,6 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
         od;
     od;
     ind := Filtered( ind, x -> not IsBool( x ) );
-    if bad then
-        Print("DEBUG: ",ind,"\n");
-    fi;
     if CHECK_IGS@ then
         Info(InfoPcpGrp, 1, "checking igs ");
         t := CheckIgs(ind, Concatenation(AsList(pcs1),AsList(pcs2)));
