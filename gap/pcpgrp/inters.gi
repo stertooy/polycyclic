@@ -54,36 +54,6 @@ BindGlobal( "GcdPcpPara", function(g, h, i, j)
     return [x, y, z, w];
 end );
 
-
-
-BindGlobal( "ReduceExpoPara", function( ind, gen, indd, rel )
-    local i, j, a, b, q, f, k;
-
-    for i in [1..Length(ind)] do
-        if not IsOne(ind[i]) and rel[i]=0 then
-            b := LeadingExponent(ind[i]);
-            for j in [1..i-1] do
-                if not IsOne( ind[j] ) then
-                    a := Exponents(ind[j])[i];
-                    q := QuoInt(a,b);
-                    if q <> 0 then
-                        ind[j] := ind[j]*ind[i]^-q;
-                        indd[j] := indd[j]*indd[i]^-q;
-                    fi;
-                fi;
-            od;
-            for j in [1..Length(gen)] do
-                a := Exponents(gen[j][1])[i];
-                q := QuoInt(a,b);
-                if q <> 0 then
-                    gen[j][1] := gen[j][1]*ind[i]^-q;
-                    gen[j][2] := gen[j][2]*indd[i]^-q;
-                fi;
-            od;
-        fi;
-    od;
-end );
-
 #############################################################################
 ##
 #F NormalIntersection( N, U ) . . . . . . . . . . . . . . . . . . .  U \cap N
@@ -99,7 +69,7 @@ end );
 InstallMethod( NormalIntersection, "for pcp groups",
                IsIdenticalObj, [IsPcpGroup, IsPcpGroup],
 function( N, U )
-    local G, coll, rels, igs, igsN, igsU, n, s, todo, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs;
+    local G, coll, rels, igs, igsN, igsU, n, s, todo, I, id, ls, rs, is, g, d, al, ar, e, tm, pairs, left, rght;
 
 	# get common overgroup of N and U
     coll := Collector( N );
@@ -171,7 +141,12 @@ function( N, U )
             
             ar := pairs[4];
             rs[d] := pairs[3];
-            ReduceExpoPara( ls, todo, rs, rels );
+			# left-rght thing here is a bit ugly
+			# but lets us reuse the function from parallel igs
+            left := List( todo, i -> i[1] );
+			rght := List( todo, i -> i[2] );
+            ReduceExpoPara( ls, left, rs, rght, rels );
+            todo := List( [1..Length(todo)], i -> [ left[i], rght[i] ] );
             d := Depth( al );
         od;
 
