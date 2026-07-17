@@ -347,6 +347,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
             d := Depth( g );
         od;
     od;
+    Print("DEBUG: ",ind);
     return Filtered( ind, x -> not IsBool( x ) );
 end );
 
