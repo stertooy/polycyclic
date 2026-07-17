@@ -732,4 +732,27 @@ true
 gap> USE_CANONICAL_PCS@Polycyclic := tmp;;
 
 #
+# Fix a bug in ComplementClassesCR
+# <https://github.com/gap-packages/polycyclic/issues/3>
+#
+gap> tmp := CHECK_IGS@Polycyclic;;
+gap> CHECK_IGS@Polycyclic := true;;
+gap> G:=PcGroupToPcpGroup(PcGroupCode(37830811398924985638637008775811, 144));;
+gap> FiniteSubgroupClasses(G);;
+gap> CHECK_IGS@Polycyclic := tmp;;
+
+#
+# Fix a bug in AddToIgs
+# <https://github.com/gap-packages/polycyclic/issues/117>
+#
+gap> G := ExamplesOfSomePcpGroups( 1 );;
+gap> x := G.1 ^ 8;;
+gap> y := G.1 ^ 3 * G.3;;
+gap> H := Subgroup( G, [ x, y ] );;
+gap> x in H;
+true
+gap> y in H;
+true
+
+#
 gap> STOP_TEST( "bugfix.tst" );

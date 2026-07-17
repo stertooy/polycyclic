@@ -5,6 +5,7 @@ NEXT (YYYY-MM-DD)
     in the following functions:
     - `ConjugacyElementsBySeries`
     - `NormalizerPcpGroup`
+    - `ComplementClassesCR`
   - Various janitorial changes
 
 2.18 (2026-04-09)
