@@ -314,7 +314,7 @@ end );
 ## factor. Typically, <pcs1> is induced wrt to a pcp and <pcs2> is the
 ## denominator of this pcp.
 ##
-BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
+BindGlobal( "AddIgsToIgs_new", function( pcs1, pcs2 )
     local ind, t;
 
     if Length( pcs1 ) = 0 then
@@ -332,8 +332,8 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     return ind;
 end );
 
-BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
-    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, pair, t;
+BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
+    local coll, rels, n, ind, todo, g, c, h, eg, eh, e, d, pair, t, val, j;
 
     if Length( pcs1 ) = 0 then
         return AsList( pcs2 );
@@ -359,16 +359,18 @@ BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
             Add( todo, g );
         fi;
     od;
+    
 
     # set counter
-    c := UpdateCounter( ind, todo, n+1 );
-
-    # create a to-do list and a pointer
+    c := TailLimit(ind, n+1);
     todo := Filtered( todo, x -> Depth( x ) < c );
-
+    val := List(todo, x -> IGSValFun(x));
+    
+    
     # loop over to-do list until it is empty
     while Length( todo ) > 0 and c > 1 do
-        g := Remove(todo);
+        j := Position(val, Minimum(val));
+        g := Remove(todo, j);
         d := Depth( g );
 
         # shift g into ind
@@ -377,9 +379,9 @@ BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
             if not IsBool( h ) then
 
                 # reduce g with h
-                eg := LeadingExponent( g );
-                eh := LeadingExponent( h );
-                e  := Gcdex( eg, eh );
+                #eg := LeadingExponent( g );
+                #eh := LeadingExponent( h );
+                #e  := Gcdex( eg, eh );
 
                 # adjust g and ind[d] by gcd
                 pair := GcdPcp( ind[d], g );
@@ -389,9 +391,13 @@ BindGlobal( "AddIgsToIgs_Old", function( pcs1, pcs2 )
                 ind[d] := g;
                 g      := g^0;
             fi;
-            c := UpdateCounter( ind, todo, c );
+            #c := UpdateCounter( ind, todo, c );
             d := Depth( g );
         od;
+        c := TailLimit(ind, c);
+        ReduceExpo(ind, todo, rels);
+        todo := Filtered(todo, x -> Depth(x)<c);
+        val := List(todo, x -> IGSValFun(x));
     od;
     ind := Filtered( ind, x -> not IsBool( x ) );
     if CHECK_IGS@ then
