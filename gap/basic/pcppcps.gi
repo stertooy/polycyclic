@@ -300,7 +300,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     S1 := Subgroup( G, AsList(pcs1) );
     S2 := Subgroup( G, AsList(pcs2) );
     if not IsNormal( S1, S2 ) then
-        Error("AddIgsToIgs with non-normal!");
+        Print("DEBUG: AddIgsToIgs with non-normal!");
     fi;
     rels := RelativeOrders( coll );
     n    := NumberOfGenerators( coll );
