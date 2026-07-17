@@ -704,6 +704,16 @@ gap> g^k = h;
 true
 
 #
+# Fix a bug in ComplementClassesCR
+# <https://github.com/gap-packages/polycyclic/issues/3>
+#
+gap> tmp := CHECK_IGS@Polycyclic;;
+gap> CHECK_IGS@Polycyclic := true;;
+gap> G:=PcGroupToPcpGroup(PcGroupCode(37830811398924985638637008775811, 144));;
+gap> FiniteSubgroupClasses(G);;
+gap> CHECK_IGS@Polycyclic := tmp;;
+
+#
 # Fix a bug in AddToIgs
 # <https://github.com/gap-packages/polycyclic/issues/117>
 #
