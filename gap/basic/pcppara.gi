@@ -8,19 +8,6 @@
 
 #############################################################################
 ##
-#F UpdateCounterPara( ind, c )  . . . . . . . . . . . . small help function
-##
-BindGlobal( "UpdateCounterPara", function( ind, c )
-    local i;
-    i := c - 1;
-    while i > 0 and not IsBool(ind[i]) and LeadingExponent(ind[i]) = 1 do
-        i := i - 1;
-    od;
-    return i + 1;
-end );
-
-#############################################################################
-##
 #F NormedPcpElementPara( g, gg )
 ##
 ## Parallel version of NormedPcpElement.
