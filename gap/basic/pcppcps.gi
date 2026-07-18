@@ -156,7 +156,6 @@ BindGlobal( "GcdPcp", function(g, h)
     return [x, y];
 end );
 
-
 #############################################################################
 ##
 #F AddToIgs( <igs>, <gens> )
@@ -192,7 +191,6 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
         while d < c do
 
             h := ind[d];
-
             if IsBool(h) then
                 ind[d] := NormedPcpElement(g);
                 AddSet(f, d);
@@ -338,7 +336,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
             Add( todo, g );
         fi;
     od;
-    
+
     # set counter
     c := TailLimit(ind, n+1);
     todo := Filtered( todo, x -> Depth( x ) < c );
