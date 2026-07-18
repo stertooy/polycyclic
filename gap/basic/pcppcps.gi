@@ -182,7 +182,7 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
     # loop over to-do list until it is empty
     while Length(todo) > 0 and c > 1 do
-        j := Position(val, Minimum(val));
+        j := PositionMinimum(val);
         g := Remove(todo, j);
         d := Depth(g);
         f := [];
@@ -218,11 +218,14 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
         # add powers and commutators
         for d in f do
             g := ind[d];
-            if rels[d] > 0 then
+            if d < c-1 and rels[d] > 0 then
                 k := g ^ RelativeOrderPcp(g);
                 if Depth(k) < c then Add(todo, k); fi;
             fi;
             for j in [1..n] do
+                if j = d or Minimum( d, j ) >= c-1 then
+                    continue;
+                fi;
                 if not IsBool(ind[j]) then
                     k := Comm(g, ind[j]);
                     if Depth(k) < c then Add(todo, k); fi;
@@ -344,7 +347,7 @@ BindGlobal( "AddIgsToIgs", function( pcs1, pcs2 )
     
     # loop over to-do list until it is empty
     while Length( todo ) > 0 and c > 1 do
-        j := Position(val, Minimum(val));
+        j := PositionMinimum(val);
         g := Remove(todo, j);
         d := Depth( g );
 
