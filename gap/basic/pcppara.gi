@@ -190,8 +190,6 @@ function( pcs, gens, ppcs, pgens )
                     AddSet(f, d);
                 fi;
             fi;
-
-
             d := Depth(g);
         od;
 
