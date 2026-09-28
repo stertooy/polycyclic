@@ -1,6 +1,8 @@
 This file describes changes in the GAP package 'polycyclic'.
 
 NEXT (YYYY-MM-DD)
+  - Implement `Intersection` for arbitrary subgroups of a pcp-group, including
+    infinite subgroups which do not normalize each other
   - Fix bugs, where wrong results could be returned or errors could be thrown,
     in the following functions:
     - `ConjugacyElementsBySeries`

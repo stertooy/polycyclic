@@ -129,7 +129,86 @@ end );
 
 #############################################################################
 ##
-#M Intersection( N, U )
+#F IntersectionPcpGroups( U, H )
+##
+## Intersect arbitrary subgroups by induction on an efa series, following
+## Section 8.4 of B. Eick, "Algorithms for Polycyclic Groups". If A is the
+## last nontrivial term, first compute UA/A intersect HA/A and lift it to
+## K = U intersect HA. The desired intersection is then the kernel of the
+## derivation K -> A/(A intersect H), h*a -> a*(A intersect H).
+##
+BindGlobal( "IntersectionPcpGroups", function( U, H )
+    local G, ser, A, nat, imgsU, imgsH, int, homU, homH, K, L, q, Q, T,
+          delta, r, F, rq, basis, lifts, pcp, mats, e, act, op, stab;
+
+    G := ClosureGroup( U, H );
+    ser := EfaSeries( G );
+    A := ser[Length(ser)-1];
+    nat := NaturalHomomorphismByNormalSubgroup( G, A );
+    imgsU := Image( nat, U );
+    imgsH := Image( nat, H );
+    int := Intersection( imgsU, imgsH );
+
+    # Restrict the quotient map to U. Its kernel is already available by
+    # normal intersection; avoid a general kernel computation here.
+    homU := GroupHomomorphismByImagesNC( U, imgsU, Igs(U),
+                List( Igs(U), x -> Image( nat, x ) ) );
+    SetKernelOfMultiplicativeGeneralMapping( homU,
+                NormalIntersection( A, U ) );
+    K := PreImagesSetNC( homU, int );
+    if IsTrivial(K) then return K; fi;
+
+    L := NormalIntersection( A, H );
+    if L = A then return K; fi;
+    q := NaturalHomomorphismByNormalSubgroup( A, L );
+    Q := Image(q);
+
+    # Lift xA to h in H, so that h^-1*x lies in A. Different choices of
+    # h give the same image in A/L. Also K <= HA normalizes L, so K acts
+    # on A/L by conjugation and delta(x*y) = delta(x)^y * delta(y).
+    homH := GroupHomomorphismByImagesNC( H, imgsH, Igs(H),
+                List( Igs(H), x -> Image( nat, x ) ) );
+    delta := function( x )
+        local h;
+        h := PreImagesRepresentativeNC( homH, Image( nat, x ) );
+        return Image( q, h^-1*x );
+    end;
+
+    # A/L may have both torsion and a free part even when A is free
+    # abelian. First stabilize zero modulo the torsion subgroup.
+    T := TorsionSubgroup(Q);
+    if not IsFinite(Q) then
+        r := NaturalHomomorphismByNormalSubgroup( Q, T );
+        F := Image(r);
+        rq := q*r;
+        basis := IndependentGeneratorsOfAbelianGroup(F);
+        lifts := List( basis, x -> PreImagesRepresentativeNC( rq, x ) );
+        pcp := Pcp(K);
+        mats := List( pcp, g -> Concatenation(
+                    List( lifts, a -> Concatenation(
+                        IndependentGeneratorExponents( F, Image(rq, a^g) ),
+                        [0] ) ),
+                    [Concatenation( IndependentGeneratorExponents(
+                        F, Image(r, delta(g)) ), [1] )] ) );
+        e := Concatenation( ListWithIdenticalEntries( Length(basis), 0 ), [1] );
+        K := StabilizerIntegralAction( K, mats, e );
+    fi;
+
+    # The remaining orbit lies in T and hence is finite. Cache the
+    # translations: the orbit routine only applies generators of K.
+    if IsTrivial(T) or IsTrivial(K) then return K; fi;
+    pcp := Pcp(K);
+    act := List( pcp, g -> [g, delta(g)] );
+    op := function( v, pair )
+        return Image( q, PreImagesRepresentativeNC(q, v)^pair[1] ) * pair[2];
+    end;
+    stab := PcpOrbitStabilizer( One(Q), pcp, act, op );
+    return SubgroupByIgs( K, stab.stab );
+end );
+
+#############################################################################
+##
+#M Intersection( U, V )
 ##
 InstallMethod( Intersection2, "for pcp groups",
                IsIdenticalObj, [IsPcpGroup, IsPcpGroup],
@@ -151,8 +230,5 @@ function( U, V )
         return NormalIntersection( V, U );
     fi;
 
-    if IsFinite( U ) or IsFinite( V ) then
-        TryNextMethod();
-    fi;
-    Error("sorry: intersection for non-normal groups not yet installed");
+    return IntersectionPcpGroups( U, V );
 end );
