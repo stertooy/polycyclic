@@ -131,78 +131,97 @@ end );
 ##
 #F IntersectionPcpGroups( U, H )
 ##
-## Intersect arbitrary subgroups by induction on an efa series, following
-## Section 8.4 of B. Eick, "Algorithms for Polycyclic Groups". If A is the
-## last nontrivial term, first compute UA/A intersect HA/A and lift it to
-## K = U intersect HA. The desired intersection is then the kernel of the
-## derivation K -> A/(A intersect H), h*a -> a*(A intersect H).
+## Based on Section 8.4 of "Algorithms for Polycyclic Groups" by B. Eick.
 ##
 BindGlobal( "IntersectionPcpGroups", function( U, H )
-    local G, ser, A, nat, imgsU, imgsH, int, homU, homH, K, L, q, Q, T,
-          delta, r, F, rq, basis, lifts, pcp, mats, e, act, op, stab;
+    local G, ser, A, p, UA_A, HA_A, UA_HA_A, gensU, imgsU, iU, U_HA, homH, K,
+          A_H, q, Q, gensH, imgsH, T, delta, r, F, rq, basis, lifts, pcp, mats,
+          e, act, oper, stab;
 
+    # Create parent group and abelian normal subgroup
     G := ClosureGroup( U, H );
     ser := EfaSeries( G );
-    A := ser[Length(ser)-1];
-    nat := NaturalHomomorphismByNormalSubgroup( G, A );
-    imgsU := Image( nat, U );
-    imgsH := Image( nat, H );
-    int := Intersection( imgsU, imgsH );
+    A := ser[ Length( ser ) - 1 ];
 
-    # Restrict the quotient map to U. Its kernel is already available by
-    # normal intersection; avoid a general kernel computation here.
-    homU := GroupHomomorphismByImagesNC( U, imgsU, Igs(U),
-                List( Igs(U), x -> Image( nat, x ) ) );
-    SetKernelOfMultiplicativeGeneralMapping( homU,
-                NormalIntersection( A, U ) );
-    K := PreImagesSetNC( homU, int );
-    if IsTrivial(K) then return K; fi;
+    # Calculate UA/A, HA/A, and their intersection (by induction)
+    p := NaturalHomomorphismByNormalSubgroupNC( G, A );
+    UA_A := ImagesSet( p, U );
+    HA_A := ImagesSet( p, H );
+    UA_HA_A := Intersection( UA_A, HA_A );
 
-    L := NormalIntersection( A, H );
-    if L = A then return K; fi;
-    q := NaturalHomomorphismByNormalSubgroup( A, L );
-    Q := Image(q);
+    # Calculate U ∩ HA as preimage of (UA ∩ HA)/A
+    gensU := Igs( U );
+    imgsU := List( gensU, x -> ImagesRepresentative( p, x ) );
+    iU := GroupHomomorphismByImagesNC( U, UA_A, gensU, imgsU );
+    SetKernelOfMultiplicativeGeneralMapping(
+        iU, NormalIntersection( A, U )
+    );
+    U_HA := PreImagesSetNC( iU, UA_HA_A );
+    # TODO: verify we hit this early exit?
+    if IsTrivial( U_HA ) then
+        return U_HA;
+    fi;
 
-    # Lift xA to h in H, so that h^-1*x lies in A. Different choices of
-    # h give the same image in A/L. Also K <= HA normalizes L, so K acts
-    # on A/L by conjugation and delta(x*y) = delta(x)^y * delta(y).
-    homH := GroupHomomorphismByImagesNC( H, imgsH, Igs(H),
-                List( Igs(H), x -> Image( nat, x ) ) );
+    A_H := NormalIntersection( A, H );
+    # TODO: verify we hit this early exit?
+    if A_H = A then
+        return U_HA;
+    fi;
+    q := NaturalHomomorphismByNormalSubgroup( A, A_H );
+    Q := ImagesSource( q );
+
+    # Create derivation
+    gensH := Igs( H );
+    imgsH := List( gensH, x -> ImagesRepresentative( p, x ) );
+    homH := GroupHomomorphismByImagesNC( H, HA_A, gensH, imgsH );
     delta := function( x )
         local h;
-        h := PreImagesRepresentativeNC( homH, Image( nat, x ) );
-        return Image( q, h^-1*x );
+        h := PreImagesRepresentativeNC( homH, ImagesRepresentative( p, x ) );
+        return ImagesRepresentative( q, h ^ -1 * x );
     end;
 
-    # A/L may have both torsion and a free part even when A is free
-    # abelian. First stabilize zero modulo the torsion subgroup.
-    T := TorsionSubgroup(Q);
-    if not IsFinite(Q) then
-        r := NaturalHomomorphismByNormalSubgroup( Q, T );
+    # Work inside A/(A ∩ H) (= Q)
+    T := TorsionSubgroup( Q );
+    K := U_HA;
+    if not IsFinite( Q ) then
+        r := NaturalHomomorphismByNormalSubgroupNC( Q, T );
         F := Image(r);
-        rq := q*r;
-        basis := IndependentGeneratorsOfAbelianGroup(F);
+        rq := q * r;
+        basis := IndependentGeneratorsOfAbelianGroup( F );
         lifts := List( basis, x -> PreImagesRepresentativeNC( rq, x ) );
-        pcp := Pcp(K);
+        pcp := Pcp( K );
+        # Create matrices corresponding to affine action
         mats := List( pcp, g -> Concatenation(
-                    List( lifts, a -> Concatenation(
-                        IndependentGeneratorExponents( F, Image(rq, a^g) ),
-                        [0] ) ),
-                    [Concatenation( IndependentGeneratorExponents(
-                        F, Image(r, delta(g)) ), [1] )] ) );
-        e := Concatenation( ListWithIdenticalEntries( Length(basis), 0 ), [1] );
+            List( lifts, a -> Concatenation(
+                IndependentGeneratorExponents(
+                    F, ImagesRepresentative( rq, a^g )
+                ),
+                [0]
+            ) ),
+            [ Concatenation( IndependentGeneratorExponents(
+                F, Image( r, delta( g ) )
+            ), [1] ) ]
+        ) );
+        # Calculate stabiliser of affine action, replace K
+        e := Concatenation(
+            ListWithIdenticalEntries( Length( basis ), 0 ),
+            [1]
+        );
         K := StabilizerIntegralAction( K, mats, e );
     fi;
 
-    # The remaining orbit lies in T and hence is finite. Cache the
-    # translations: the orbit routine only applies generators of K.
-    if IsTrivial(T) or IsTrivial(K) then return K; fi;
-    pcp := Pcp(K);
-    act := List( pcp, g -> [g, delta(g)] );
-    op := function( v, pair )
-        return Image( q, PreImagesRepresentativeNC(q, v)^pair[1] ) * pair[2];
+    if IsTrivial( T ) or IsTrivial( K ) then
+        return K;
+    fi;
+
+    pcp := Pcp( K );
+    act := List( pcp, g -> [ g, delta( g ) ] );
+    oper := function( pnt, g )
+        return ImagesRepresentative( q,
+            PreImagesRepresentativeNC( q, pnt ) ^ g[1]
+        ) * g[2];
     end;
-    stab := PcpOrbitStabilizer( One(Q), pcp, act, op );
+    stab := PcpOrbitStabilizer( One( Q ), pcp, act, oper );
     return SubgroupByIgs( K, stab.stab );
 end );
 
