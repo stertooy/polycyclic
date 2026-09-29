@@ -173,7 +173,6 @@ function( N, U )
                 fi;
             fi;
 
-            # keep a dividing pivot to avoid replacing equivalent lifts
             if al = ls[d] and ar = rs[d] then
                 al := id;
                 ar := id;
