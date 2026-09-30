@@ -323,10 +323,9 @@ installed to compute the corresponding features in polycyclic groups.
 <Func Name="Intersection" Arg="U, V"/>
 <Description>
 	Computes the intersection of two subgroups <M>U, V \leq G</M> of a
-	pcp-group. If either subgroup normalises the other, a kernel computation
-	is used; see <Cite Key="Sims94"/>. In general, the method follows
-	Section 8.4 of <Cite Key="Eic01b"/>, using induction along an elementary
-	or free abelian series and stabilizers of affine actions on its factors.
+	pcp-group, using the algorithm described in <Cite Key="Eic01b"/>. If
+	either subgroup normalises the other, we use a more efficient procedure,
+	see <Cite Key="Sims94"/> for an outline of this algorithm.
 </Description>
 </ManSection>
 
