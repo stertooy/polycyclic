@@ -167,7 +167,7 @@ BindGlobal( "IntersectionPcpGroups", function( U, H )
     if A_H = A then
         return U_HA;
     fi;
-    q := NaturalHomomorphismByNormalSubgroup( A, A_H );
+    q := NaturalHomomorphismByNormalSubgroupNC( A, A_H );
     Q := ImagesSource( q );
 
     # Create derivation
@@ -185,7 +185,7 @@ BindGlobal( "IntersectionPcpGroups", function( U, H )
     K := U_HA;
     if not IsFinite( Q ) then
         r := NaturalHomomorphismByNormalSubgroupNC( Q, T );
-        F := Image(r);
+        F := ImagesSource(r);
         rq := q * r;
         basis := IndependentGeneratorsOfAbelianGroup( F );
         lifts := List( basis, x -> PreImagesRepresentativeNC( rq, x ) );
@@ -199,7 +199,7 @@ BindGlobal( "IntersectionPcpGroups", function( U, H )
                 [0]
             ) ),
             [ Concatenation( IndependentGeneratorExponents(
-                F, Image( r, delta( g ) )
+                F, ImagesRepresentative( r, delta( g ) )
             ), [1] ) ]
         ) );
         # Calculate stabiliser of affine action, replace K

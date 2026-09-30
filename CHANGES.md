@@ -1,14 +1,13 @@
 This file describes changes in the GAP package 'polycyclic'.
 
 NEXT (YYYY-MM-DD)
-  - Implement `Intersection` for arbitrary subgroups of a pcp-group, including
-    infinite subgroups which do not normalize each other
   - Fix bugs, where wrong results could be returned or errors could be thrown,
     in the following functions:
     - `ConjugacyElementsBySeries`
     - `ComplementClassesCR`
     - `OrbitIntegralAction`
     - `NormalizerPcpGroup`
+  - Implement `Intersection` for arbitrary subgroups of a pcp-group
   - Make more use of `NC` versions of functions, and avoid the use of generic `PreImage`
     and `Image` dispatchers to improve speed and memory usage
   - Various janitorial changes
