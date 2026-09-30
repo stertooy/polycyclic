@@ -8,6 +8,8 @@ NEXT (YYYY-MM-DD)
     - `OrbitIntegralAction`
     - `NormalizerPcpGroup`
   - Implement `Intersection` for arbitrary subgroups of a pcp-group
+  - `ConjugacyElementsBySeries` now works for elements not contained in the conjugating
+    group
   - Make more use of `NC` versions of functions, and avoid the use of generic `PreImage`
     and `Image` dispatchers to improve speed and memory usage
   - Various janitorial changes
