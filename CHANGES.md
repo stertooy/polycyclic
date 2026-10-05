@@ -2,6 +2,8 @@ This file describes changes in the GAP package 'polycyclic'.
 
 ## Unreleased
 
+- Extend `SemidirectProduct` to mixed pcp and arbitrary finite polycyclic
+  groups, including finite automorphism groups acting on pcp groups
 - Fix bugs, where wrong results could be returned or errors could be thrown,
   in the following functions:
   - `AbelianPcpGroup`

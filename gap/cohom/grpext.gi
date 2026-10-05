@@ -297,7 +297,7 @@ end );
 
 #############################################################################
 ##
-#M  SemiDirectProduct( G, alpha, N ) . . . . . . . . . . . . . for pcp groups
+#M  SemidirectProduct( G, alpha, N ) . . . . . . . . . . . . . for pcp groups
 ##
 InstallMethod( SemidirectProduct, "for pcp groups",
                [ IsPcpGroup, IsGroupHomomorphism, IsPcpGroup ],
@@ -322,6 +322,75 @@ function( G, alpha, N )
         SetSize( S, Product( List( groups, Size ) ) );
     fi;
 
+    return S;
+end );
+
+InstallMethod( SemidirectProduct, "for a finite polycyclic group and a pcp group",
+               [ IsGroup, IsGroupHomomorphism, IsPcpGroup ],
+function( G, alpha, N )
+    local iso, domain, S, info, proj;
+
+    if HasIsFinite( G ) and not IsFinite( G ) then
+        TryNextMethod();
+    fi;
+
+    iso := IdentityMapping( G );
+    if IsGroupOfAutomorphisms( G ) then
+        domain := AutomorphismDomain( G );
+        if IsPcpGroup( domain ) and not IsFinite( domain ) then
+            # The action on a generating tuple is faithful. This avoids
+            # enumerating the infinite domain when comparing automorphisms.
+            iso := ActionHomomorphism( G, Orbit( G, Igs( domain ), OnTuples ),
+                                      OnTuples, "surjective" );
+            SetIsInjective( iso, true );
+            SetSize( G, Size( Image( iso ) ) );
+        fi;
+    fi;
+    if not IsFinite( Image( iso ) ) or not IsPolycyclicGroup( Image( iso ) ) then
+        TryNextMethod();
+    fi;
+
+    # Convert via a pc group to support arbitrary finite representations.
+    iso := iso * IsomorphismPcGroup( Image( iso ) );
+    iso := iso * IsomorphismPcpGroup( Range( iso ) );
+    S := SemidirectProduct( Range( iso ),
+                           InverseGeneralMapping( iso ) * alpha, N );
+
+    # Keep the embedding and projection relative to the original group.
+    info := SemidirectProductInfo( S );
+    info.embeddings[1] := iso * Embedding( S, 1 );
+    SetIsInjective( info.embeddings[1], true );
+    proj := Projection( S );
+    info.projections := proj * InverseGeneralMapping( iso );
+    SetIsSurjective( info.projections, true );
+    SetKernelOfMultiplicativeGeneralMapping( info.projections, Kernel( proj ) );
+    info.groups[1] := G;
+    return S;
+end );
+
+InstallMethod( SemidirectProduct, "for a pcp group and a finite polycyclic group",
+               [ IsPcpGroup, IsGroupHomomorphism, IsGroup ],
+function( G, alpha, N )
+    local iso, gens, auts, A, action, S, info;
+
+    if not IsFinite( N ) or not IsPolycyclicGroup( N ) then
+        TryNextMethod();
+    fi;
+
+    iso := IsomorphismPcGroup( N );
+    iso := iso * IsomorphismPcpGroup( Range( iso ) );
+    gens := Igs( G );
+    auts := List( gens,
+                  g -> InducedAutomorphism( iso, ImagesRepresentative( alpha, g ) ) );
+    A := Group( auts, IdentityMapping( Range( iso ) ) );
+    SetIsGroupOfAutomorphisms( A, true );
+    action := GroupHomomorphismByImagesNC( G, A, gens, auts );
+    S := SemidirectProduct( G, action, Range( iso ) );
+
+    info := SemidirectProductInfo( S );
+    info.embeddings[2] := iso * Embedding( S, 2 );
+    SetIsInjective( info.embeddings[2], true );
+    info.groups[2] := N;
     return S;
 end );
 
