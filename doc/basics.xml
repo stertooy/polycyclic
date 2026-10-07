@@ -536,31 +536,16 @@ Pcp-group with orders [ 2, 0, 0 ]
 </ManSection>
 
 <ManSection>
-<Oper Name="SemidirectProduct" Arg="G, alpha, N" Label="for pcp groups"/>
-<Description>
-	returns the semidirect product of the pcp-groups <A>G</A> and <A>N</A>,
-	where <A>G</A> acts on <A>N</A> via <A>alpha</A>, as a pcp-group.
-</Description>
-</ManSection>
-
-<ManSection>
 <Oper Name="SemidirectProduct" Arg="G, alpha, N" Label="for pcp groups and finite polycyclic groups"/>
+<Oper Name="SemidirectProduct" Arg="autgp, N" Label="for finite automorphism groups and pcp groups"/>
 <Description>
 	returns the semidirect product of the groups <A>G</A> and <A>N</A>,
 	where <A>G</A> acts on <A>N</A> via <A>alpha</A>, as a pcp-group.
-	One of <A>G</A> and <A>N</A> must be a pcp-group and the other a
-	finite polycyclic group in a representation for which &GAP; can
-	compute an isomorphism to a pc-group.
-</Description>
-</ManSection>
-
-<ManSection>
-<Oper Name="SemidirectProduct" Arg="Aut, N" Label="for finite automorphism groups and pcp groups"/>
-<Description>
-	returns the semidirect product of the finite polycyclic group of
-	automorphisms <A>Aut</A> and the pcp-group <A>N</A>, where <A>Aut</A>
-	acts on <A>N</A> by its automorphisms, as a pcp-group.
-	The group <A>N</A> may be infinite.
+	One of <A>G</A> and <A>N</A> must be a pcp-group and the other either
+	also a pcp-group or a finite polycyclic group.
+	<P/>
+	In the second variant, <A>autgp</A> must be a finite polycyclic group
+	of automorphisms of the pcp-group <A>N</A>.
 </Description>
 </ManSection>
 
