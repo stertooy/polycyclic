@@ -10,7 +10,8 @@
 DeclareSynonym( "IsPcpGroup", IsGroup and IsPcpElementCollection );
 InstallTrueMethod( IsPolycyclicGroup, IsPcpGroup );
 
-InstallTrueMethod( CanEasilySortElements, IsPcpGroup );
+InstallTrueMethod( CanEasilyCompareElements, IsPcpGroup );
+InstallTrueMethod( CanEasilySortElements, IsPcpGroup and IsFinite );
 InstallTrueMethod( KnowsHowToDecompose, IsPcpGroup );
 
 

@@ -210,7 +210,9 @@ InstallGlobalFunction( NilpotentByAbelianNormalSubgroup, function( G )
                 if IsNilpotent( DerivedSubgroup( L ) ) then
                     return L;
                 else
-                    AddSet( sub[i], L );
+                    if not L in sub[i] then
+                        Add( sub[i], L );
+                    fi;
                 fi;
             od;
         od;
