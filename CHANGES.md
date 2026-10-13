@@ -13,17 +13,22 @@ This file describes changes in the GAP package 'polycyclic'.
   - `ComplementClassesCR`
   - `ConjugacyElementsBySeries`
   - `ConjugacyIntegralAction`
+  - `CyclicGroup`
   - `FCCentre`
   - `IsElementaryAbelian`
   - `IsMatrixRepresentation`
   - `IsNilpotentGroup`
+  - `IsomorphismPcpGroupFromFpGroupWithPcPres`
   - `IsSingleValued`
+  - `NilpotentByAbelianNormalSubgroup`
   - `NonAbelianExteriorSquarePlusEmbedding`
   - `NormalIntersection`
   - `NormalizerIntegralAction`
   - `NormalizerPcpGroup`
   - `OrbitCongruenceAction`
   - `OrbitIntegralAction`
+  - `PcpElementByExponents`
+  - `PcpElementByGenExpList`
   - `PcpOrbitStabilizer`
   - `SchurExtensionEpimorphism`
   - `StabilizerIntegralAction`
@@ -40,6 +45,8 @@ This file describes changes in the GAP package 'polycyclic'.
 - Optimise `NormalIntersection`
 - Make more use of `NC` versions of functions, and avoid the use of generic `PreImage`
   and `Image` dispatchers to improve speed and memory usage
+- Implement a method for sorting pcp-subgroups, which prevents hangs when creating
+  sets or dictionary of pcp-subgroups
 - Various janitorial changes
 
 ## 2.18 (2026-04-09)

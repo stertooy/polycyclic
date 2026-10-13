@@ -43,9 +43,12 @@ InstallGlobalFunction( EvalConsistency, function( coll, sys )
             CollectWordOrFail( coll, a, [j,1] );
             ps[i][j] := a;
 
-            a := ShallowCopy(gn[i]);
-            CollectWordOrFail( coll, a, [j,-1] );
-            ps[i][i+j] := a;
+            # (i -j) is used, and collectable, only for j of infinite order
+            if e[j] = 0 then
+                a := ShallowCopy(gn[i]);
+                CollectWordOrFail( coll, a, [j,-1] );
+                ps[i][i+j] := a;
+            fi;
         od;
     od;
 
@@ -439,7 +442,14 @@ end );
 BindGlobal( "NonAbelianTensorSquarePlusEpimorphism", function(G)
     local   n,  embed,  S,  coll,  y,  sys,  T,  lift;
 
-    if Size(G) = 1 then return IdentityMapping( G ); fi;
+    if Size(G) = 1 then
+        embed := NonAbelianExteriorSquarePlusEmbedding(G);
+        S := Range(embed);
+        S!.embedding := embed;
+        lift := GroupHomomorphismByImagesNC(G, S, [], []);
+        SetIsSurjective(lift, true);
+        return lift;
+    fi;
 
     # some info
     n := Length(Igs(G));
@@ -491,7 +501,12 @@ BindGlobal( "NonAbelianTensorSquareEpimorphism", function( G )
     local   n,  epi,  T,  U,  t,  r,  c,  i,  j,  GoG,  gens,  embed,
             imgs,  alpha;
 
-    if Size(G) = 1 then return IdentityMapping(G); fi;
+    if Size(G) = 1 then
+        alpha := GroupHomomorphismByImagesNC(
+            G, NonAbelianExteriorSquare(G), [], [] );
+        SetIsSurjective(alpha, true);
+        return alpha;
+    fi;
 
     # set up
     n := Length(Pcp(G));
