@@ -73,5 +73,12 @@ gap> G := DirectProduct( AbelianPcpGroup( [2] ), ExamplesOfSomePcpGroups( 2 ) );
 gap> FCCentre( G ) = Subgroup( G, [G.1] );
 true
 
+# Exercise the GAP fallback on a fresh group to avoid the cached FCCentre.
+gap> useAlnuth := POLYCYCLIC_USE_ALNUTH;; POLYCYCLIC_USE_ALNUTH := false;;
+gap> G := DirectProduct( AbelianPcpGroup( [2] ), ExamplesOfSomePcpGroups( 2 ) );;
+gap> FCCentre( G ) = Subgroup( G, [G.1] );
+true
+gap> POLYCYCLIC_USE_ALNUTH := useAlnuth;;
+
 #
 gap> STOP_TEST( "cent.tst", 10000000);

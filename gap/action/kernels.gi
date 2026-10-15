@@ -162,16 +162,16 @@ BindGlobal( "VerifyIndependence", function( mats )
 
     if Length( mats ) = 1 and mats[1] <> mats[1]^0 then return true; fi;
 
-    Print("   verifying linear independence \n");
+    Info( InfoPcpGrp, 2, "   verifying linear independence" );
     base := AlgebraBase( mats );
     d := Length( base );
-    Print("     got ", Length( mats ), " generators and dimension ", d,"\n");
+    Info( InfoPcpGrp, 2, "     got ", Length( mats ), " generators and dimension ", d );
 
     if Length( mats ) >= d then return false; fi;
-    prim := PrimitiveAlgebraElement( mats, base );
-    Print("     computing dixon bound \n");
+    prim := PrimitiveAlgebraElement( mats, List( base, Flat ) );
+    Info( InfoPcpGrp, 2, "     computing dixon bound" );
     dixn := Length(mats[1]) * LogDixonBound( mats, prim )^2;
-    Print("     found ", dixn, "\n");
+    Info( InfoPcpGrp, 2, "     found ", dixn );
     done := false;
 
     # set up
@@ -179,7 +179,7 @@ BindGlobal( "VerifyIndependence", function( mats )
     p := 1;
 
     while not done do
-        Print("     next step verification \n");
+        Info( InfoPcpGrp, 2, "     next step verification" );
 
         # compute new lattices and intersect
         for i in [1..d] do
@@ -188,10 +188,12 @@ BindGlobal( "VerifyIndependence", function( mats )
             L := LatticeIntersection( L, N );
         od;
 
-        # find short vectors
-        L := LLLReducedBasis( L ).basis;
-        w := Minimum( List( L, x -> x * x ) );
-        Print("     got shortest vector ", w, "\n");
+        # Squared Gram-Schmidt norms bound the squared norm of every
+        # nonzero lattice vector from below.
+        L := LLLReducedBasis( L );
+        w := Minimum( L.B );
+        L := L.basis;
+        Info( InfoPcpGrp, 2, "     squared norm lower bound ", w );
 
         # check dixon bound
         if w > dixn then return true; fi;
@@ -227,16 +229,10 @@ BindGlobal( "KernelOfCongruenceMatrixActionGAP", function( G, mats )
         tmps := AddToIgs( DenominatorOfPcp( gens ), tmps );
         U := SubgroupByIgs( G, tmps );
         p := rell.prime;
-    until IndexNC( G, U ) = 1 or IndexNC( U, K ) = 1;
-
-    # verify if desired
-    if IndexNC( G, U ) > 1 and POLYCYCLIC_VERIFY then
-        gens := Pcp( G, U );
-        acts := InducedByPcp( pcp, gens, mats );
-        if not VerifyIndependence( acts ) then
-            Error("  generators are not linearly independent");
-        fi;
-    fi;
+    until IndexNC( G, U ) = 1 or
+          (IndexNC( U, K ) = 1 and
+           (not POLYCYCLIC_VERIFY or
+            VerifyIndependence( InducedByPcp( pcp, Pcp( G, U, "snf" ), mats ) )));
 
     # that's it
     return U;

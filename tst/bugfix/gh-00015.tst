@@ -19,5 +19,11 @@ Pcp-group with orders [ 10, 0 ]
 gap> CheckStabilizer(G, stab, mats, e);
 true
 
+# Also verify the kernel using the GAP fallback.
+gap> useAlnuth := POLYCYCLIC_USE_ALNUTH;; POLYCYCLIC_USE_ALNUTH := false;;
+gap> StabilizerIntegralAction( G, mats, e ) = stab;
+true
+gap> POLYCYCLIC_USE_ALNUTH := useAlnuth;;
+
 #
 gap> STOP_TEST( "gh-00015.tst" );
