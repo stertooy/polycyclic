@@ -27,7 +27,8 @@ BindGlobal( "LogAbsValueBound", function( rat )
     a1 := LogInt( AbsInt( NumeratorRat(rat) ), 2 );
     a2 := LogInt( DenominatorRat(rat), 2 );
     a  := Maximum( AbsInt( a1 - a2 + 1 ), AbsInt( a1 - a2 - 1) );
-    return QuoInt( a * 3, 4 );
+    # log(2) < 3/4; round upwards to retain an upper bound.
+    return QuoInt( a * 3 + 3, 4 );
 end );
 
 #############################################################################
@@ -142,7 +143,7 @@ BindGlobal( "LogDixonBound", function( gens, prim )
     c := prim.elem;
     f := CoefficientsOfUnivariatePolynomial( prim.poly );
     d := Length( f ) - 1;
-    if f[1] <> 1 or f[d+1] <> 1 then return fail; fi;
+    # The generators must be units, but the primitive element need not be.
 
     # get prim-basis
     # Print("compute prim-base \n");
@@ -166,13 +167,14 @@ BindGlobal( "LogDixonBound", function( gens, prim )
         if gens[i] = c then
             s := s + t;
         else
-            a := LogAbsValueBound( Sum( AbsInt( cofs[i] ) ) );
-            b := LogAbsValueBound( Sum( AbsInt( dofs[i] ) ) );
+            a := LogAbsValueBound( Sum( cofs[i], AbsInt ) );
+            b := LogAbsValueBound( Sum( dofs[i], AbsInt ) );
             s := s + (d-1) * t + Maximum( a, b );
         fi;
     od;
 
-    # now determine final value
-    t := 7 * d^2 * s / QuoInt( 2 * LogInt(d,2), 3 );
+    # Dixon's bound requires t >= 7*d^2*s/log(d), and log(2) > 2/3.
+    t := QuoInt( 21 * d^2 * s, 2 * LogInt(d,2) ) + 1;
+    # The relation exponents are integers strictly below (t^r+1)/t.
     return QuoInt( t^Length(gens) + 1, t );
 end );
