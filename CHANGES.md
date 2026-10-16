@@ -45,8 +45,8 @@ This file describes changes in the GAP package 'polycyclic'.
 - Implement a method for `RepresentativeAction`
 - Add `IsomorphismPcpGroupByIgs` and its `NC` variant to construct an isomorphic
   pcp-group whose pcp corresponds to the given igs
-- Allow a finite group fallback for `RepresentativeAction` and `IsConjugate` for
-  subgroups
+- Implement `RepresentativeAction` and `IsConjugate` for subgroups of pcp-groups,
+  including subgroups not contained in the conjugating group
 - Optimise `NormalIntersection` and `EfaSeries`
 - Avoid needlessly large powers when norming and sifting elements at a depth
   of finite relative order; this also changes which power `NormedPcpElement`
