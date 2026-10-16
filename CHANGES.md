@@ -43,8 +43,8 @@ This file describes changes in the GAP package 'polycyclic'.
 - `ConjugacyElementsBySeries` now works for elements not contained in the conjugating
   group
 - Implement a method for `RepresentativeAction`
-- Allow a finite group fallback for `RepresentativeAction` and `IsConjugate` for
-  subgroups
+- Implement `RepresentativeAction` and `IsConjugate` for subgroups of pcp-groups,
+  including subgroups not contained in the conjugating group
 - Optimise `NormalIntersection`
 - Speed up `AddToIgs` and `AddToIgsParallel`, in particular for many
   generators and for large groups
