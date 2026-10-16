@@ -195,8 +195,12 @@ end );
 ##
 InstallMethod( FactorOrder, [IsPcpElement],
 function( g )
+    local exp, d;
     if Length( g!.word ) = 0 then return fail; fi;
-    return RelativeOrders( Collector(g) )[Depth(g)];
+    exp := Collector(g)![PC_EXPONENTS];
+    d := Depth(g);
+    if IsBound( exp[d] ) then return exp[d]; fi;
+    return 0;
 end );
 
 #############################################################################
