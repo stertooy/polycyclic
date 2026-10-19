@@ -112,16 +112,37 @@ end );
 
 #############################################################################
 ##
+#F ReduceExpoElmPara( ind, g, indd, gg, rel )
+##
+## Parallel version of  ReduceExpoElm.
+##
+BindGlobal( "ReduceExpoElmPara", function ( ind, g, indd, gg, rel )
+    local i, q;
+    for i in [ Depth( g ) .. Length( ind ) ] do
+        if not IsBool( ind[i] ) and rel[i] = 0 then
+            q := QuoInt( Exponents( g )[i], LeadingExponent( ind[i] ) );
+            if q <> 0 then
+                g  := g  * ind[i]  ^ (- q);
+                gg := gg * indd[i] ^ (- q);
+            fi;
+        fi;
+    od;
+    return [ g, gg ];
+end );
+
+#############################################################################
+##
 #F AddToIgsParallel( <pcs>, <gens>, <ppcs>, <pgens> )
 ##
 ## This function adds the elements in <gens> to the induced pcs <pcs>.
 ## It acts simultaneously on <pcs> and <ppcs> as well as <gens> and <pgens>.
+## See AddToIgs for the algorithm.
 ##
 InstallGlobalFunction( AddToIgsParallel,
 function( pcs, gens, ppcs, pgens )
-    local coll, rels, n, inf, todo, tododo, ind, indd, pows, ppows, g, gg,
-          d, h, hh, a, b, q, k, c, i, r, sub, keep, val, j, f, nrmd, pairs,
-          added, oldc, chg, t;
+    local coll, rels, n, inf, c, ind, indd, pows, ppows, sub, keep, idx,
+          queue, pqueue, qpos, todo, tododo, val, added, g, gg, d, f, h, hh,
+          a, b, q, r, k, nrmd, pairs, oldc, chg, t, i, j;
 
     if Length( gens ) = 0 then return [pcs, ppcs]; fi;
 
@@ -130,7 +151,6 @@ function( pcs, gens, ppcs, pgens )
     rels := RelativeOrders( coll );
     n    := NumberOfGenerators( coll );
     inf  := 0 in rels;
-    c    := n+1;
 
     # set up; pows[d] and ppows[d] cache negative powers of ind[d], indd[d]
     ind  := ListWithIdenticalEntries(n, false);
@@ -142,29 +162,51 @@ function( pcs, gens, ppcs, pgens )
     od;
     pows  := List([1..n], i -> []);
     ppows := List([1..n], i -> []);
+    c     := TailLimit(ind, n+1);
 
-    # initial gens still need to be reduced
-    added := true;
+    # gens wait in queue, keeping the first of equal elements; todo holds
+    # powers and commutators
+    sub   := Filtered([1..Length(gens)], i -> Depth(gens[i]) < c);
+    queue := gens{sub};
+    StableSortParallel(queue, sub);
+    keep  := Filtered([1..Length(sub)], i -> i = 1 or queue[i] <> queue[i-1]);
+    sub   := Set(sub{keep});
+    queue  := gens{sub};
+    pqueue := pgens{sub};
+    idx := [1..Length(sub)];
+    StableSortParallel(List(queue, IGSValFun), idx);
+    queue  := queue{idx};
+    pqueue := pqueue{idx};
+    qpos   := 1;
+    todo   := [];
+    tododo := [];
+    val    := [];
+    added  := false;
 
-    # do a reduction step
-    c      := TailLimit(ind, c);
-    sub    := Filtered([1..Length(gens)], i -> Depth(gens[i]) < c);
-    # Keep the first occurrence of each generator, in input order.
-    todo   := gens{sub};
-    StableSortParallel(todo, sub);
-    keep   := Filtered([1..Length(sub)], i -> i = 1 or todo[i] <> todo[i-1]);
-    sub    := Set(sub{keep});
-    todo   := gens{sub};
-    tododo := pgens{sub};
-    val    := List(todo, IGSValFun);
+    while c > 1 do
 
-    # loop over to-do list until it is empty
-    while Length( todo ) > 0 and c > 1 do
-        j := PositionMinimum(val);
-        g  := Remove(todo, j);
-        gg := Remove(tododo, j);
-        Remove(val, j);
-        d  := Depth( g );
+        # take the next element, from queue only once todo is empty
+        if Length( todo ) > 0 then
+            j  := PositionMinimum(val);
+            g  := Remove(todo, j);
+            gg := Remove(tododo, j);
+            Remove(val, j);
+        else
+            while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
+                qpos := qpos+1;
+            od;
+            if qpos > Length(queue) then break; fi;
+            g  := queue[qpos];
+            gg := pqueue[qpos];
+            qpos := qpos+1;
+            # sifting g unreduced can blow up its exponents
+            if inf then
+                pairs := ReduceExpoElmPara(ind, g, indd, gg, rels);
+                g  := pairs[1];
+                gg := pairs[2];
+            fi;
+        fi;
+        d := Depth( g );
         f := [];
 
         # shift g into ind
@@ -172,8 +214,6 @@ function( pcs, gens, ppcs, pgens )
 
             h  := ind[d];
             hh := indd[d];
-
-            # shift in
             if IsBool( h ) then
                 nrmd := NormedPcpElementPara( g, gg );
                 ind[d]  := nrmd[1];
@@ -184,7 +224,7 @@ function( pcs, gens, ppcs, pgens )
                 h  := ind[d];
                 hh := indd[d];
             fi;
-            if g = h then 
+            if g = h then
                 g  := g^0;
                 gg := gg^0;
             else
@@ -229,16 +269,17 @@ function( pcs, gens, ppcs, pgens )
                 ppows[i] := [];
             od;
             chg := t[2];
+            for i in chg do
+                if Depth(todo[i]) < c then val[i] := IGSValFun(todo[i]); fi;
+            od;
         fi;
-        for i in chg do
-            if Depth(todo[i]) < c then val[i] := IGSValFun(todo[i]); fi;
-        od;
 
         # add powers and commutators
         added := false;
         for d in f do
             g :=  ind[d];
             gg := indd[d];
+            # skip infinite factors and powers in the tail
             if d < c-1 and rels[d] > 0 then
                 r := RelativeOrderPcp(g);
                 k := g ^ r;
@@ -276,14 +317,15 @@ function( pcs, gens, ppcs, pgens )
 
         # reduce
         if c < oldc or Length(chg) > 0 then
-            sub    := Filtered([1..Length(todo)], i -> Depth(todo[i])<c);
-            todo   := todo{sub};
-            tododo := tododo{sub};
-            val    := val{sub};
+            t      := Filtered([1..Length(todo)], i -> Depth(todo[i]) < c);
+            todo   := todo{t};
+            tododo := tododo{t};
+            val    := val{t};
         fi;
-        Info(InfoPcpGrp, 3, Length(val)," versus ", ind);
+        Info(InfoPcpGrp, 3, Length(todo)," versus ", ind);
     od;
 
+    # return resulting lists
     ind  := Filtered(ind,  x -> not IsBool(x));
     indd := Filtered(indd, x -> not IsBool(x));
     return [ind, indd];
