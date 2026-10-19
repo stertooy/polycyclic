@@ -4,10 +4,34 @@
 ##
 
 InstallGlobalFunction( "IsMatrixRepresentation",
-function( G, matrices )
-    local   coll,  conjugates,  powers,  d,  I,  i,  j,  conj,  rhs,  k;
+function( arg )
+    local   G,  gens,  matrices,  coll,  conjugates,  powers,  d,  I,
+            i,  j,  conj,  rhs,  k;
+
+    if not Length(arg) in [2,3] or not IsPcpGroup(arg[1]) then
+        Error("usage: IsMatrixRepresentation( G[, gens], matrices )");
+    fi;
+    G := arg[1];
+    matrices := arg[Length(arg)];
+    if Length(arg) = 2 then
+        gens := GeneratorsOfGroup(G);
+    else
+        gens := arg[2];
+    fi;
+    if not IsDenseList(gens) or not IsDenseList(matrices) then
+        Error("<gens> and <matrices> must be dense lists");
+    fi;
+    if Length(gens) <> Length(matrices) then
+        Error("<gens> and <matrices> must be lists of same length");
+    fi;
+    if IsEmpty(gens) then return IsTrivial(G); fi;
+    if not ForAll(gens, g -> g in G) then return false; fi;
 
     coll := Collector( G );
+    if gens <> GeneratorsOfGroup(PcpGroupByCollectorNC(coll)) then
+        return GroupHomomorphismByImages(G, Group(matrices), gens, matrices)
+               <> fail;
+    fi;
     conjugates := coll![PC_CONJUGATES];
     powers := coll![PC_POWERS];
 
@@ -58,7 +82,7 @@ function( hom )
     View( mapi[1] );
     Print( " -> " );
 
-    d := Length(mapi[2][1]);
+    d := DimensionOfMatrixGroup( Range(hom) );
     Print( "<", Length(mapi[2]), " ", d, "x", d, "-matrices>" );
     return;
 end );
@@ -662,20 +686,25 @@ function( tgroup )
     fi;
 
     pcp := Pcp( tgroup );
-    if ForAny( RelativeOrdersOfPcp( pcp ), r -> r <> 0 ) then
-        pgroup := PcpGroupBySeries(UpperCentralSeriesOfGroup(tgroup), "snf");
-        coll := Collector( pgroup );
-        gens := List(
-            GeneratorsOfPcp( Pcp( pgroup ) ),
-            g -> ImagesRepresentative( pgroup!.bijection, g )
-        );
+    if Length(pcp) = 0 then
+        gens := [];
+        mats := [];
+        mgroup := Group( [], IdentityMat(1) );
     else
-        coll := Collector( PcpGroupByPcp(pcp) );
-        gens := GeneratorsOfPcp( pcp );
+        if ForAny( RelativeOrdersOfPcp( pcp ), r -> r <> 0 ) then
+            pgroup := PcpGroupBySeries(UpperCentralSeriesOfGroup(tgroup), "snf");
+            coll := Collector( pgroup );
+            gens := List(
+                GeneratorsOfPcp( Pcp( pgroup ) ),
+                g -> ImagesRepresentative( pgroup!.bijection, g )
+            );
+        else
+            coll := Collector( PcpGroupByPcp(pcp) );
+            gens := GeneratorsOfPcp( pcp );
+        fi;
+        mats := LowerUnitriangularForm( RepresentationForPcpCollector( coll ) );
+        mgroup := Group( mats, mats[1]^0 );
     fi;
-    mats := LowerUnitriangularForm( RepresentationForPcpCollector( coll ) );
-
-    mgroup := Group( mats, mats[1]^0 );
     UseIsomorphismRelation( tgroup, mgroup );
 
     phi := GroupHomomorphismByImagesNC( tgroup, mgroup, gens, mats );

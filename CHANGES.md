@@ -2,6 +2,13 @@ This file describes changes in the GAP package 'polycyclic'.
 
 ## Unreleased
 
+- Let `IsMatrixRepresentation(G, matrices)` use `GeneratorsOfGroup(G)` and
+  support explicit generators via `IsMatrixRepresentation(G, gens, matrices)`;
+  check subgroups, redundant and identity generators, and trivial groups
+  correctly, and reject unequal list lengths. Use explicit polycyclic generators
+  when checking affine representations, stop their recursion after the last
+  generator, and handle trivial groups in affine and unitriangular
+  representations.
 - Fix bugs, where wrong results could be returned or errors could be thrown,
   in the following functions:
   - `AbelianPcpGroup`
