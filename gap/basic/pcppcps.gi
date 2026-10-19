@@ -25,7 +25,7 @@ end );
 
 #############################################################################
 ##
-#F ReduceExpo
+#F ReduceExpo( <ind>, <gen>, <rel> )
 ##
 ## Returns the positions changed in <ind> and in <gen>.
 ##
@@ -58,6 +58,21 @@ BindGlobal( "ReduceExpo", function( ind, gen, rel )
         fi;
     od;
     return [ci, cg];
+end );
+
+#############################################################################
+##
+#F ReduceExpoElm( <ind>, <g>, <rel> ) . . . . . . ReduceExpo for one element
+##
+BindGlobal( "ReduceExpoElm", function( ind, g, rel )
+    local i, q;
+    for i in [Depth(g)..Length(ind)] do
+        if not IsBool(ind[i]) and rel[i]=0 then
+            q := QuoInt(Exponents(g)[i], LeadingExponent(ind[i]));
+            if q <> 0 then g := g*ind[i]^-q; fi;
+        fi;
+    od;
+    return g;
 end );
 
 #############################################################################
@@ -205,9 +220,16 @@ end );
 ##
 #F AddToIgs( <igs>, <gens> )
 ##
+## Sifts the elements of <gens> into <igs> one at a time. After each, the
+## powers and commutators of the changed entries are sifted in until ind is
+## closed under them again. The entries from c on have leading exponent 1
+## and so generate the tail G_c of the pc series: elements of depth c or
+## more need no sifting, and the loop stops at c = 1, often long before
+## all of <gens> is used.
+##
 InstallGlobalFunction(AddToIgs, function(igs, gens)
-    local coll, rels, n, inf, c, ind, pows, g, d, todo, val, i, j, f, h,
-          a, b, q, k, pair, t, added, oldc, chg;
+    local coll, rels, n, inf, c, ind, pows, queue, qpos, todo, val,
+          added, g, d, f, h, a, b, q, pair, oldc, chg, i, j, k, t;
 
     if Length(gens) = 0 then return igs; fi;
 
@@ -216,26 +238,38 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
     rels := RelativeOrders(coll);
     n    := NumberOfGenerators(coll);
     inf  := 0 in rels;
-    c    := n+1;
 
     # set up; pows[d] caches negative powers of ind[d]
     ind  := ListWithIdenticalEntries(n, false);
     for g in igs do ind[Depth(g)] := g; od;
     pows := List([1..n], i -> []);
+    c    := TailLimit(ind, n+1);
 
-    # initial gens still need to be reduced
-    added := true;
+    # gens wait in queue; todo holds powers and commutators
+    queue := Set(Filtered(gens, x -> Depth(x) < c));
+    StableSortParallel(List(queue, IGSValFun), queue);
+    qpos  := 1;
+    todo  := [];
+    val   := [];
+    added := false;
 
-    # do a reduction step
-    c := TailLimit(ind, c);
-    todo := Set(Filtered(gens, x -> Depth(x) < c));
-    val := List(todo, IGSValFun);
+    while c > 1 do
 
-    # loop over to-do list until it is empty
-    while Length(todo) > 0 and c > 1 do
-        j := PositionMinimum(val);
-        g := Remove(todo, j);
-        Remove(val, j);
+        # take the next element, from queue only once todo is empty
+        if Length(todo) > 0 then
+            j := PositionMinimum(val);
+            g := Remove(todo, j);
+            Remove(val, j);
+        else
+            while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
+                qpos := qpos+1;
+            od;
+            if qpos > Length(queue) then break; fi;
+            g := queue[qpos];
+            qpos := qpos+1;
+            # sifting g unreduced can blow up its exponents
+            if inf then g := ReduceExpoElm(ind, g, rels); fi;
+        fi;
         d := Depth(g);
         f := [];
 
@@ -285,10 +319,10 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
             t := ReduceExpo(ind, todo, rels);
             for i in t[1] do pows[i] := []; od;
             chg := t[2];
+            for i in chg do
+                if Depth(todo[i]) < c then val[i] := IGSValFun(todo[i]); fi;
+            od;
         fi;
-        for i in chg do
-            if Depth(todo[i]) < c then val[i] := IGSValFun(todo[i]); fi;
-        od;
 
         # add powers and commutators
         added := false;
@@ -333,7 +367,7 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
             todo := todo{t};
             val := val{t};
         fi;
-        Info(InfoPcpGrp, 3, Length(val)," versus ", ind);
+        Info(InfoPcpGrp, 3, Length(todo), " versus ", ind);
     od;
 
     # return resulting list
