@@ -244,5 +244,36 @@ true
 gap> Index(G, SubgroupByIgs(G, igs));
 infinity
 
+# Reductions reuse powers and remain correct when the igs entries change.
+gap> G := AbelianPcpGroup(3);;
+gap> pcs := [G.1^12*G.2^20*G.3^28, G.2^10*G.3^14, G.3^14];;
+gap> gens := [pcs[1]^-2, pcs[1]^2, G.1^30*G.2^50*G.3^70, pcs[1]^3];;
+gap> igs := AddToIgs(pcs, gens);;
+gap> igs = [G.1^6, G.2^10, G.3^14];
+true
+gap> res := AddToIgsParallel(pcs, gens,
+>     List(pcs, x -> x^5), List(gens, x -> x^5));;
+gap> res[1] = igs and res[2] = List(igs, x -> x^5);
+true
+
+# Large signed tail powers, with shadows at different depths.
+gap> G := AbelianPcpGroup(2);; m := 10^20;;
+gap> gens := [G.1^2*G.2^m, G.1^3*G.2^-m];;
+gap> AddToIgs([G.2], gens) = [G.1, G.2];
+true
+gap> res := AddToIgsParallel([G.2], gens, [G.1],
+>     [G.1^m*G.2^2, G.1^-m*G.2^3]);;
+gap> res = [[G.1, G.2], [G.2, G.1]];
+true
+
+# A finite pc factor can contain an element of infinite order.
+gap> coll := FromTheLeftCollector(2);;
+gap> SetRelativeOrder(coll, 1, 5);; SetPower(coll, 1, [2, 1]);;
+gap> T := PcpGroupByCollector(coll);;
+gap> res := AddToIgsParallel([G.1^2, G.2^3], [G.1*G.2^51],
+>     [T.1^-102, T.1^3], [One(T)]);;
+gap> res = [[G.1, G.2^3], [T.1^-51, T.1^3]];
+true
+
 #
 gap> STOP_TEST( "AddToIgs.tst", 1);

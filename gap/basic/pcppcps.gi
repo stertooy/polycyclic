@@ -62,21 +62,6 @@ end );
 
 #############################################################################
 ##
-#F ReduceExpoElm( <ind>, <g>, <rel> ) . . . . . . ReduceExpo for one element
-##
-BindGlobal( "ReduceExpoElm", function( ind, g, rel )
-    local i, q;
-    for i in [Depth(g)..Length(ind)] do
-        if not IsBool(ind[i]) and rel[i]=0 then
-            q := QuoInt(Exponents(g)[i], LeadingExponent(ind[i]));
-            if q <> 0 then g := g*ind[i]^-q; fi;
-        fi;
-    od;
-    return g;
-end );
-
-#############################################################################
-##
 #F CheckIgs( <igs>[, <gens>] )
 ##
 BindGlobal( "CheckIgs", function( igs, arg... )
@@ -185,10 +170,19 @@ end );
 ## Caches the result in pows[d], which must be reset when ind[d] changes.
 ##
 BindGlobal( "IgsNegativePower", function( ind, pows, d, q )
-    local b, p, r, s, value;
+    local b, p, r, s, value, w;
 
     # cache bound, avoids making cache consist of large sparse lists
     b := 16;
+
+    # Powers of one generator in an infinite pc factor need no collection.
+    if q > b or q < -b then
+        w := GenExpList(ind[d]);
+        if Length(w) = 2 and FactorOrder(ind[d]) = 0 then
+            return PcpElementByGenExpListNC(Collector(ind[d]),
+                [w[1], -q*w[2]]);
+        fi;
+    fi;
 
     # for positive powers we do nothing special
     if q < 0 then return ind[d]^-q; fi;
@@ -218,17 +212,34 @@ end );
 
 #############################################################################
 ##
+#F ReduceExpoElm( <ind>, <pows>, <g>, <rel> ) . . ReduceExpo for one element
+##
+BindGlobal( "ReduceExpoElm", function( ind, pows, g, rel )
+    local i, q;
+    # The leading coordinate is handled by the subsequent sift.
+    for i in [Depth(g)+1..Length(ind)] do
+        if not IsBool(ind[i]) and rel[i]=0 then
+            q := QuoInt(Exponents(g)[i], LeadingExponent(ind[i]));
+            if q <> 0 then g := g*IgsNegativePower(ind, pows, i, q); fi;
+        fi;
+    od;
+    return g;
+end );
+
+#############################################################################
+##
 #F AddToIgs( <igs>, <gens> )
 ##
-## Sifts the elements of <gens> into <igs> one at a time. After each, the
-## powers and commutators of the changed entries are sifted in until ind is
-## closed under them again. The entries from c on have leading exponent 1
+## Sifts input generators together with powers and commutators. Input
+## generators wait in a sorted queue and are reduced only when selected;
+## powers and commutators in todo are reduced as ind changes.
+## The entries from c on have leading exponent 1
 ## and so generate the tail G_c of the pc series: elements of depth c or
 ## more need no sifting, and the loop stops at c = 1, often long before
 ## all of <gens> is used.
 ##
 InstallGlobalFunction(AddToIgs, function(igs, gens)
-    local coll, rels, n, inf, c, ind, pows, queue, qpos, todo, val,
+    local coll, rels, n, inf, c, ind, pows, queue, qval, qpos, todo, val,
           added, g, d, f, h, a, b, q, pair, oldc, chg, i, j, k, t;
 
     if Length(gens) = 0 then return igs; fi;
@@ -247,7 +258,8 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
     # gens wait in queue; todo holds powers and commutators
     queue := Set(Filtered(gens, x -> Depth(x) < c));
-    StableSortParallel(List(queue, IGSValFun), queue);
+    qval  := List(queue, IGSValFun);
+    StableSortParallel(qval, queue);
     qpos  := 1;
     todo  := [];
     val   := [];
@@ -255,20 +267,25 @@ InstallGlobalFunction(AddToIgs, function(igs, gens)
 
     while c > 1 do
 
-        # take the next element, from queue only once todo is empty
+        # Compare the next input with the pending powers and commutators.
+        while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
+            qpos := qpos+1;
+        od;
         if Length(todo) > 0 then
             j := PositionMinimum(val);
+        else
+            j := fail;
+        fi;
+        if qpos <= Length(queue) and (j = fail or qval[qpos] <= val[j]) then
+            g := queue[qpos];
+            qpos := qpos+1;
+            # Reduce the tail to avoid exponent growth during sifting.
+            if inf then g := ReduceExpoElm(ind, pows, g, rels); fi;
+        elif j <> fail then
             g := Remove(todo, j);
             Remove(val, j);
         else
-            while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
-                qpos := qpos+1;
-            od;
-            if qpos > Length(queue) then break; fi;
-            g := queue[qpos];
-            qpos := qpos+1;
-            # sifting g unreduced can blow up its exponents
-            if inf then g := ReduceExpoElm(ind, g, rels); fi;
+            break;
         fi;
         d := Depth(g);
         f := [];

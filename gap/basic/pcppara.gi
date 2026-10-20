@@ -112,18 +112,19 @@ end );
 
 #############################################################################
 ##
-#F ReduceExpoElmPara( ind, g, indd, gg, rel )
+#F ReduceExpoElmPara( ind, pows, g, indd, ppows, gg, rel )
 ##
 ## Parallel version of  ReduceExpoElm.
 ##
-BindGlobal( "ReduceExpoElmPara", function ( ind, g, indd, gg, rel )
+BindGlobal( "ReduceExpoElmPara", function ( ind, pows, g, indd, ppows, gg, rel )
     local i, q;
-    for i in [ Depth( g ) .. Length( ind ) ] do
+    # The leading coordinate is handled by the subsequent sift.
+    for i in [ Depth( g ) + 1 .. Length( ind ) ] do
         if not IsBool( ind[i] ) and rel[i] = 0 then
             q := QuoInt( Exponents( g )[i], LeadingExponent( ind[i] ) );
             if q <> 0 then
-                g  := g  * ind[i]  ^ (- q);
-                gg := gg * indd[i] ^ (- q);
+                g  := g  * IgsNegativePower(ind,  pows,  i, q);
+                gg := gg * IgsNegativePower(indd, ppows, i, q);
             fi;
         fi;
     od;
@@ -141,7 +142,7 @@ end );
 InstallGlobalFunction( AddToIgsParallel,
 function( pcs, gens, ppcs, pgens )
     local coll, rels, n, inf, c, ind, indd, pows, ppows, sub, keep, idx,
-          queue, pqueue, qpos, todo, tododo, val, added, g, gg, d, f, h, hh,
+          queue, pqueue, qval, qpos, todo, tododo, val, added, g, gg, d, f, h, hh,
           a, b, q, r, k, nrmd, pairs, oldc, chg, t, i, j;
 
     if Length( gens ) = 0 then return [pcs, ppcs]; fi;
@@ -174,7 +175,8 @@ function( pcs, gens, ppcs, pgens )
     queue  := gens{sub};
     pqueue := pgens{sub};
     idx := [1..Length(sub)];
-    StableSortParallel(List(queue, IGSValFun), idx);
+    qval := List(queue, IGSValFun);
+    StableSortParallel(qval, idx);
     queue  := queue{idx};
     pqueue := pqueue{idx};
     qpos   := 1;
@@ -185,26 +187,31 @@ function( pcs, gens, ppcs, pgens )
 
     while c > 1 do
 
-        # take the next element, from queue only once todo is empty
+        # Compare the next input with the pending powers and commutators.
+        while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
+            qpos := qpos+1;
+        od;
         if Length( todo ) > 0 then
-            j  := PositionMinimum(val);
+            j := PositionMinimum(val);
+        else
+            j := fail;
+        fi;
+        if qpos <= Length(queue) and (j = fail or qval[qpos] <= val[j]) then
+            g  := queue[qpos];
+            gg := pqueue[qpos];
+            qpos := qpos+1;
+            # Reduce the tail to avoid exponent growth during sifting.
+            if inf then
+                pairs := ReduceExpoElmPara(ind, pows, g, indd, ppows, gg, rels);
+                g  := pairs[1];
+                gg := pairs[2];
+            fi;
+        elif j <> fail then
             g  := Remove(todo, j);
             gg := Remove(tododo, j);
             Remove(val, j);
         else
-            while qpos <= Length(queue) and Depth(queue[qpos]) >= c do
-                qpos := qpos+1;
-            od;
-            if qpos > Length(queue) then break; fi;
-            g  := queue[qpos];
-            gg := pqueue[qpos];
-            qpos := qpos+1;
-            # sifting g unreduced can blow up its exponents
-            if inf then
-                pairs := ReduceExpoElmPara(ind, g, indd, gg, rels);
-                g  := pairs[1];
-                gg := pairs[2];
-            fi;
+            break;
         fi;
         d := Depth( g );
         f := [];
