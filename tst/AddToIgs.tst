@@ -216,5 +216,33 @@ gap> v := S.2 * S.1^-2 * S.3 * S.2^2;;
 gap> Index(S, Subgroup(S, [u, v]));
 1
 
+# Large powers during sifting, including shadows at different depths.
+gap> G := AbelianPcpGroup(2);; H := AbelianPcpGroup(2);; m := 10^20;;
+gap> AddToIgs([G.1^2], [G.1^(2*m)*G.2^2]) = [G.1^2, G.2^2];
+true
+gap> AddToIgs([G.1^2*G.2^3], [G.1^(2*m)*G.2^(3*m+2)])
+>     = [G.1^2*G.2, G.2^2];
+true
+gap> res := AddToIgsParallel([G.1^2], [G.1^(2*m)*G.2^2],
+>     [H.2^3], [H.1^2*H.2^(3*m)]);;
+gap> res = [[G.1^2, G.2^2], [H.2^3, H.1^2]];
+true
+
+# A finite source factor can give a large negative quotient for its shadow.
+gap> G := AbelianPcpGroup([101, 0]);;
+gap> res := AddToIgsParallel([G.1], [G.1^80*G.2^2],
+>     [H.2^-3], [H.1^2]);;
+gap> res = [[G.1, G.2^2], [H.2^-3, H.1^2*H.2^-63]];
+true
+
+# A finite shadow factor can contain an element of infinite order.
+gap> G := AbelianPcpGroup(2);; coll := FromTheLeftCollector(2);;
+gap> SetRelativeOrder(coll, 1, 5);; SetPower(coll, 1, [2, 1]);;
+gap> T := PcpGroupByCollector(coll);;
+gap> res := AddToIgsParallel([G.1^2], [G.1^(2*m)*G.2^2],
+>     [T.1^3], [One(T)]);;
+gap> res = [[G.1^2, G.2^2], [T.1^3, T.1^(-3*m)]];
+true
+
 #
 gap> STOP_TEST( "AddToIgs.tst", 1);

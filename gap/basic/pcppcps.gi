@@ -170,10 +170,19 @@ end );
 ## Caches the result in pows[d], which must be reset when ind[d] changes.
 ##
 BindGlobal( "IgsNegativePower", function( ind, pows, d, q )
-    local b, p, r, s, value;
+    local b, p, r, s, value, w;
 
     # cache bound, avoids making cache consist of large sparse lists
     b := 16;
+
+    # Powers of one generator in an infinite pc factor need no collection.
+    if q > b or q < -b then
+        w := GenExpList(ind[d]);
+        if Length(w) = 2 and FactorOrder(ind[d]) = 0 then
+            return PcpElementByGenExpListNC(Collector(ind[d]),
+                [w[1], -q*w[2]]);
+        fi;
+    fi;
 
     # for positive powers we do nothing special
     if q < 0 then return ind[d]^-q; fi;
