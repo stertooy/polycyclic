@@ -72,7 +72,7 @@ end );
 InstallMethod( Collector,
         "for pcp groups",
         [ IsPcpGroup ],
-        G -> Collector( One(G) ) );
+        G -> One(G)!.collector );
 
 
 InstallMethod( Collector,
@@ -151,36 +151,51 @@ end );
 ##
 #F FactorOrder( g )
 ##
+BindGlobal( "FactorOrderNT", function( g )
+    local ords;
+    ords := g!.collector![PC_EXPONENTS];
+    if IsBound( ords[g!.word[1]] ) then return ords[g!.word[1]]; fi;
+    return 0;
+end );
+
 InstallMethod( FactorOrder, [IsPcpElement],
 function( g )
     if Length( g!.word ) = 0 then return fail; fi;
-    return RelativeOrders( Collector(g) )[Depth(g)];
+    return FactorOrderNT( g );
 end );
 
 #############################################################################
 ##
 #F RelativeOrderPcp( g )
 ##
+BindGlobal( "RelativeOrderPcpFromFactor", function( g, r )
+    local l;
+    l := g!.word[2];
+    if l = 1 then
+       return r;
+    elif IsBound( g!.normed ) and g!.normed then
+        return r / g!.word[2];
+    elif IsPrimeInt( r ) then
+        return r;
+    else
+        return r / GcdInt( r, l );
+    fi;
+end );
+
 InstallMethod( RelativeOrderPcp, [IsPcpElement],
 function( g )
-    local r, l;
+    local r;
+
+    # the trivial case
     if Length( g!.word ) = 0 then return fail; fi;
-    r := FactorOrder( g );
+
+    r := FactorOrderNT( g );
 
     # the infinite case
     if r = 0 then return 0; fi;
 
     # the finite case
-    l := LeadingExponent( g );
-    if l = 1 then
-       return r;
-    elif IsBound( g!.normed ) and g!.normed then
-        return r / LeadingExponent(g);
-    elif IsPrime( r ) then
-        return r;
-    else
-        return r / Gcd( r, l );
-    fi;
+    return RelativeOrderPcpFromFactor( g, r );
 end );
 # TODO: Replace this by something like DeclareSynonymAttr.
 # However, we cannot use DeclareSynonymAttr directly, because for
@@ -197,13 +212,16 @@ InstallMethod( RelativeIndex, [IsPcpElement],
 function( g )
     local r, l;
     if Length( g!.word ) = 0 then return fail; fi;
-    r := FactorOrder( g );
-    l := LeadingExponent( g );
-
+    l := g!.word[2];
+    if l = 1 then
+        return 1;
+    fi;
     if IsBound( g!.normed ) and g!.normed then
         return l;
-    elif r > 0 then
-        return Gcd( r, l );
+    fi;
+    r := FactorOrderNT( g );
+    if r > 0 then
+        return GcdInt( r, l );
     else
         return AbsInt( l );
     fi;
@@ -217,9 +235,10 @@ InstallMethod( Order, [IsPcpElement],
 function( g )
     local o, r;
     o := 1;
-    while g <> g^0 do
-        r := RelativeOrderPcp( g );
+    while Length(g!.word) <> 0 do
+        r := FactorOrderNT( g );
         if r = 0 then return infinity; fi;
+        r := RelativeOrderPcpFromFactor( g, r );
         o := o*r;
         g := g^r;
     od;
@@ -245,15 +264,22 @@ end );
 ##
 BindGlobal( "NormingExponent", function( g )
     local r, l, e;
-    r := FactorOrder( g );
-    l := LeadingExponent( g );
-    if IsBool( l ) then
+
+    if Length( g!.word ) = 0 then
         return 1;
-    elif r = 0 and l < 0 then
+    fi;
+
+    l := g!.word[2];
+    if l = 1 then
+        return 1;
+    fi;
+
+    r := FactorOrderNT( g );
+    if r = 0 and l < 0 then
         return -1;
     elif r = 0 then
         return 1;
-    elif IsPrime( r ) then
+    elif IsPrimeInt( r ) then
         return SmallestResidue( l^-1, r );
     else
         e := Gcdex( r, l );     # = RelativeIndex
@@ -337,15 +363,21 @@ InstallMethod( \*,
 function( g1, g2 )
     local clt, e, f;
 
-    clt := Collector( g1 );
-    if TailOfElm( g1 ) < Depth( g2 ) then
-        e := Exponents( g1 ) + Exponents( g2 );
+    if Length( g2!.word ) = 0 then
+        return g1;
+    elif Length( g1!.word ) = 0 then
+        return g2;
+    fi;
+
+    clt := g1!.collector;
+    if g1!.word[ Length(g1!.word) - 1 ] < g2!.word[1] then
+        e := g1!.exponents + g2!.exponents;
 
     else
-        e  := ShallowCopy( Exponents( g1 ) );
-        f  := GenExpList( g2 );
+        e  := ShallowCopy( g1!.exponents );
+        f  := g2!.word;
         while CollectWordOrFail( clt, e, f ) = fail do
-            e  := ShallowCopy( Exponents( g1 ) );
+            e  := ShallowCopy( g1!.exponents );
         od;
     fi;
 
@@ -362,17 +394,11 @@ InstallMethod( Inverse,
 function( g )
     local   clt,  k;
 
-    clt := Collector( g );
-    if IsGeneratorOrInverse( g ) and RelativeOrderPcp(g) = 0 then
-        if LeadingExponent( g ) = 1 then
-            k := clt![PC_INVERSES][ Depth(g) ];
-        else
-            k := clt![PC_GENERATORS][ Depth(g) ];
-        fi;
-
+    clt := g!.collector;
+    if Length( g!.word ) = 2 and FactorOrderNT( g ) = 0 then
+        k := [g!.word[1], -g!.word[2]];
     else
-
-        k := FromTheLeftCollector_Inverse( clt, GenExpList(g) );
+        k := FromTheLeftCollector_Inverse( clt, g!.word );
     fi;
 
     return PcpElementByGenExpListNC( clt, k );
@@ -384,17 +410,11 @@ InstallMethod( InverseMutable,
 function( g )
     local   clt,  k;
 
-    clt := Collector( g );
-    if IsGeneratorOrInverse( g ) and RelativeOrderPcp(g) = 0 then
-        if LeadingExponent( g ) = 1 then
-            k := clt![PC_INVERSES][ Depth(g) ];
-        else
-            k := clt![PC_GENERATORS][ Depth(g) ];
-        fi;
-
+    clt := g!.collector;
+    if Length( g!.word ) = 2 and FactorOrderNT( g ) = 0 then
+        k := [g!.word[1], -g!.word[2]];
     else
-
-        k := FromTheLeftCollector_Inverse( clt, GenExpList(g) );
+        k := FromTheLeftCollector_Inverse( clt, g!.word );
     fi;
 
     return PcpElementByGenExpListNC( clt, k );
@@ -409,20 +429,34 @@ InstallMethod( \^,
                [IsPcpElement, IsInt],
                SUM_FLAGS + 10,
 function( g, d )
-    local   res;
+    local res, r;
 
     # first catch the trivial cases
     if d = 0 then
-        return PcpElementByExponentsNC( Collector(g), 0*Exponents(g) );
+        return PcpElementConstruction( g!.collector, 0*g!.exponents, [] );
     elif d = 1 then
         return g;
     elif d = -1 then
         return Inverse(g);
     fi;
 
+    # shortcut for trivial elements and powers of a generator
+    if Length( g!.word ) = 0 then
+        return g;
+    elif Length( g!.word ) = 2 then
+        r := FactorOrderNT( g );
+        if r = 0 then
+            return PcpElementByGenExpListNC(
+                g!.collector, [ g!.word[1], d*g!.word[2] ] );
+        elif not IsBound( g!.collector![PC_POWERS][g!.word[1]] ) then
+            return PcpElementByGenExpListNC(
+                g!.collector, [ g!.word[1], (d*g!.word[2]) mod r ] );
+        fi;
+    fi;
+
 #    # use collector function
 #    c := Collector(g);
-#    k := FromTheLeftCollector_Power(c, ObjByExponents(c, Exponents(g)), d);
+#    k := FromTheLeftCollector_Power(c, ObjByExponents(c, g!.exponents), d);
 #    return PcpElementByGenExpListNC( c, k );
 
     # set up for computation
@@ -431,8 +465,13 @@ function( g, d )
         d := -d;
     fi;
 
+    # shortcut since we do a lot of binary multiplication
+    if d = 2 then
+        return g * g;
+    fi;
+
     # compute power
-    res := g^0;
+    res := PcpElementConstruction( g!.collector, 0*g!.exponents, [] );
     while d > 0 do
         if d mod 2 = 1 then   res := res * g;   fi;
 
@@ -448,53 +487,62 @@ InstallMethod( \^,
                IsIdenticalObj,
                [IsPcpElement, IsPcpElement],
 function( h, g )
-    local   clt,  conj;
+    local   clt,  conj,  exp,  sing;
 
-    clt := Collector( g );
-    if IsGeneratorOrInverse( h ) and IsGeneratorOrInverse( g ) then
+    if Length( h!.word ) = 0 or Length( g!.word ) = 0 then
+        return h;
+    fi;
 
-        if Depth( g ) = Depth( h ) then
+    sing := Length( h!.word ) = 2 and Length( g!.word ) = 2;
+    if sing and h!.word[1] = g!.word[1] then
+        return h;
+    fi;
 
-            conj := h;
+    clt := g!.collector;
+    if sing and
+       (h!.word[2] = 1 or h!.word[2] = -1) and
+       (g!.word[2] = 1 or g!.word[2] = -1) then
 
-        elif Depth( g ) < Depth( h ) then
+        if g!.word[1] < h!.word[1] then
 
             conj := GetConjugateNC( clt,
-                            Depth( h ) * LeadingExponent( h ),
-                            Depth( g ) * LeadingExponent( g ) );
+                            h!.word[1] * h!.word[2],
+                            g!.word[1] * g!.word[2] );
 
             conj := PcpElementByGenExpListNC( clt, conj );
 
-        elif Depth( g ) > Depth( h ) then
+        elif g!.word[1] > h!.word[1] then
             #  h^g = g^-1 * h * g
 
-            conj := ShallowCopy( Exponents( g^-1 ) );
+            exp := Inverse(g)!.exponents;
+            conj := ShallowCopy( exp );
             while CollectWordOrFail( clt, conj,
-                    [ Depth(h), LeadingExponent( h ),
-                      Depth(g), LeadingExponent( g ) ] ) = fail do
+                    [ h!.word[1], h!.word[2],
+                      g!.word[1], g!.word[2] ] ) = fail do
 
-                conj := ShallowCopy( Exponents( g^-1 ) );
+                conj := ShallowCopy( exp );
             od;
 
             conj := PcpElementByExponentsNC( clt, conj );
         fi;
 
-    elif Depth(g) = TailOfElm(g) and Depth( g ) < Depth( h ) then
+    elif g!.word[1] = g!.word[Length(g!.word)-1] and
+         g!.word[1] < h!.word[1] then
 
         ##
         ## nicht klar ob dies etwas bringt
         ##
-        g := [ Depth(g), LeadingExponent(g) ];
-        conj := ShallowCopy( Exponents( h ) );
+        g := [ g!.word[1], g!.word[2] ];
+        conj := ShallowCopy( h!.exponents );
         while CollectWordOrFail( clt, conj, g ) = fail do
-            conj := ShallowCopy( Exponents( h ) );
+            conj := ShallowCopy( h!.exponents );
         od;
 
         conj[ g[1] ] := 0;
         conj := PcpElementByExponentsNC( clt, conj );
 
     else
-        conj := g^-1 * h * g;
+        conj := Inverse(g) * h * g;
     fi;
 
     return conj;
@@ -552,48 +600,60 @@ end );
 ##
 InstallMethod( Comm,
                "for two pcp elements",
+               IsIdenticalObj,
                [ IsPcpElement, IsPcpElement ],
 function( h, g )
-    local   clt,  conj,  ev;
+    local   clt,  conj,  ev,  exp,  sing;
 
-    clt := Collector( g );
+    if Length( h!.word ) = 0 then
+        return h;
+    elif Length( g!.word ) = 0 then
+        return g;
+    fi;
 
-    if IsGeneratorOrInverse( h ) and IsGeneratorOrInverse( g ) then
+    sing := Length( h!.word ) = 2 and Length( g!.word ) = 2;
+    if sing and h!.word[1] = g!.word[1] then
+        return PcpElementConstruction( g!.collector, 0*g!.exponents, [] );
+    fi;
+    clt := g!.collector;
 
-        if Depth( g ) = Depth( h ) then return g^0; fi;
+    #if IsGeneratorOrInverse( h ) and IsGeneratorOrInverse( g ) then
+    if sing and
+       (h!.word[2] = 1 or h!.word[2] = -1) and
+       (g!.word[2] = 1 or g!.word[2] = -1) then
 
-
-        if Depth( g ) < Depth( h ) then
+        if g!.word[1] < h!.word[1] then
 
             ##  Do we know the commutator?
 
-            conj := GetCommutatorNC( clt, Depth( h ) * LeadingExponent( h ),
-                                          Depth( g ) * LeadingExponent( g ) );
+            conj := GetCommutatorNC( clt, h!.word[1] * h!.word[2],
+                                          g!.word[1] * g!.word[2] );
             if conj  <> fail then
                 return conj;
             fi;
 
             ##  [h,g] = h^-1 h^g
 
-            conj := GetConjugateNC( clt, Depth( h ) * LeadingExponent( h ),
-                                         Depth( g ) * LeadingExponent( g ) );
+            conj := GetConjugateNC( clt, h!.word[1] * h!.word[2],
+                                         g!.word[1] * g!.word[2] );
 
-            ev := ShallowCopy( Exponents( h^-1 ) );
+            exp := Inverse(h)!.exponents;
+            ev := ShallowCopy( exp );
             while CollectWordOrFail( clt, ev, conj ) = fail do
-                ev := ShallowCopy( Exponents( h^-1 ) );
+                ev := ShallowCopy( exp );
             od;
 
             return PcpElementByExponentsNC( clt, ev );
         fi;
 
-        if Depth( g ) > Depth( h ) and RelativeOrderPcp( g ) = 0 then
+        if g!.word[1] > h!.word[1] and FactorOrderNT( g ) = 0 then
             ##  [h,g] = (g^-1)^h * g
 
-            conj := GetConjugateNC( clt, Depth( g ) *  -LeadingExponent( g ),
-                                         Depth( h ) *   LeadingExponent( h ) );
+            conj := GetConjugateNC( clt, g!.word[1] *  -g!.word[2],
+                                         h!.word[1] *   h!.word[2] );
 
             ev := ExponentsByObj( clt, conj );
-            while CollectWordOrFail( clt, ev, GenExpList(g) ) = fail do
+            while CollectWordOrFail( clt, ev, g!.word ) = fail do
                 ev := ExponentsByObj( clt, conj );
             od;
 
@@ -604,7 +664,7 @@ function( h, g )
 
     return PcpElementByGenExpListNC( clt,
                    FromTheLeftCollector_Solution( clt,
-                   GenExpList(g*h),GenExpList(h*g) ) );
+                   (g*h)!.word,(h*g)!.word ) );
 
 end );
 
@@ -615,7 +675,14 @@ end );
 #M One
 ##
 InstallMethod( One, "for pcp elements", [IsPcpElement],
-g -> PcpElementByExponentsNC( Collector(g), 0*Exponents(g) ) );
+g -> PcpElementConstruction( g!.collector, 0*g!.exponents, [] ) );
+
+#############################################################################
+##
+#M IsOne
+##
+InstallMethod( IsOne, "for pcp elements", [IsPcpElement],
+g -> Length(g!.word) = 0 );
 
 #############################################################################
 ##
@@ -626,7 +693,7 @@ InstallMethod( \=,
                IsIdenticalObj,
                [IsPcpElement, IsPcpElement],
 function( g, h )
-    return Exponents( g ) = Exponents( h );
+    return g!.exponents = h!.exponents;
 end );
 
 #############################################################################
@@ -638,6 +705,6 @@ InstallMethod( \<,
                IsIdenticalObj,
                [IsPcpElement, IsPcpElement],
 function( g, h )
-    return Exponents( g ) > Exponents( h );
+    return g!.exponents > h!.exponents;
 end );
 
