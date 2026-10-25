@@ -140,27 +140,29 @@ BindGlobal( "IgsNegativePower", function( ind, pows, d, q )
 
     # for positive powers we do nothing special
     if q < 0 then return ind[d]^-q; fi;
-    if not IsBound(pows[d]) then pows[d] := []; fi;
+    if not IsBound(pows[d]) then pows[d] := [Inverse(ind[d])]; fi;
     p := pows[d];
-
-    # store the inverse of ind[d]
-    if not IsBound(p[1]) then p[1] := ind[d]^-1; fi;
 
     # attempt to retrieve from cache
     if q <= b and IsBound(p[q]) then return p[q]; fi;
 
-    # reuse a cached power whose exponent divides q
-    r := Minimum(Length(p), QuoInt(q, 2));
-    s := q;
-    while r > 1 do
-        if IsBound(p[r]) and q mod r = 0 then
-            s := QuoInt(q, r);
-            break;
-        fi;
-        r := r - 1;
-    od;
+    if IsPcpElement(p[1]) and Length(GenExpList(p[1])) = 2 then
+        # shortcut for generator powers
+        value := p[1]^q;
+    else
+        # reuse a cached power whose exponent divides q
+        r := Minimum(Length(p), QuoInt(q, 2));
+        s := q;
+        while r > 1 do
+            if IsBound(p[r]) and q mod r = 0 then
+                s := QuoInt(q, r);
+                break;
+            fi;
+            r := r - 1;
+        od;
+        value := p[r]^s;
+    fi;
 
-    value := p[r]^s;
     if q <= b then p[q] := value; fi;
     return value;
 end );
