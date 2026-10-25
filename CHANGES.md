@@ -20,6 +20,7 @@ This file describes changes in the GAP package 'polycyclic'.
   - `IsElementaryAbelian`
   - `IsMatrixRepresentation`
   - `IsNilpotentGroup`
+  - `IsomorphismPcpGroupFromFpGroupWithPcPres`
   - `IsSingleValued`
   - `LowIndexNormalSubgroups`
   - `LowIndexSubgroupClasses`
@@ -30,6 +31,7 @@ This file describes changes in the GAP package 'polycyclic'.
   - `NormalizerPcpGroup`
   - `OrbitCongruenceAction`
   - `OrbitIntegralAction`
+  - `PcpElementByExponents`
   - `PcpElementByGenExpList`
   - `PcpOrbitStabilizer`
   - `SchurExtensionEpimorphism`
