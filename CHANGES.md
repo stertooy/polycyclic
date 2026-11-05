@@ -50,6 +50,8 @@ This file describes changes in the GAP package 'polycyclic'.
 - Add `IsomorphismPcpGroupByIgs` and its `NC` variant to construct an isomorphic
   pcp-group whose pcp corresponds to the given igs
 - Support explicit generators in `IsMatrixRepresentation`
+- Add `IsAbelianByFinite`, `IsCrystallographic`, `IsBieberbachGroup`,
+  `IsAlmostCrystallographic`, `IsAlmostBieberbachGroup`, and `IsNilpotentByAbelian`
 - Allow a finite group fallback for `RepresentativeAction` and `IsConjugate` for
   subgroups
 - Extend `SemidirectProduct` to mixed pcp and finite polycyclic groups (note that
