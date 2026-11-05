@@ -52,6 +52,8 @@ This file describes changes in the GAP package 'polycyclic'.
 - Support explicit generators in `IsMatrixRepresentation`
 - Allow a finite group fallback for `RepresentativeAction` and `IsConjugate` for
   subgroups
+- Extend `SemidirectProduct` to mixed pcp and finite polycyclic groups (note that
+  this may now produce a PcpGroup where it previously gave a PcGroup)
 - Optimise `NormalIntersection` and `EfaSeries`
 - Avoid needlessly large powers when norming and sifting elements at a depth
   of finite relative order; this also changes which power `NormedPcpElement`
